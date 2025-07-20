@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
+import RealTimeMonitor from './RealTimeMonitor';
+import AnalyticsDashboard from './AnalyticsDashboard';
 import { 
   Play, 
   Pause, 
@@ -33,7 +36,9 @@ import {
   Users,
   Code,
   Database,
-  Globe
+  Globe,
+  BarChart,
+  Wifi
 } from "lucide-react";
 
 interface Task {
@@ -158,6 +163,60 @@ const ExecutionEngine = () => {
     priority: 'medium' as Task['priority'],
     description: ''
   });
+
+  // Simulate real-time task progress updates and notifications
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTasks(currentTasks => {
+        const updatedTasks = currentTasks.map(task => {
+          if (task.status === 'running') {
+            const progressIncrease = Math.floor(Math.random() * 5) + 1;
+            const newProgress = Math.min(task.progress + progressIncrease, 100);
+            
+            // Check if task just completed
+            if (newProgress === 100 && task.progress < 100) {
+              toast({
+                title: "Task Completed! 🎉",
+                description: `${task.name} has finished successfully`,
+              });
+              return { ...task, progress: 100, status: 'completed' as const };
+            }
+            
+            return { ...task, progress: newProgress };
+          }
+          return task;
+        });
+        return updatedTasks;
+      });
+    }, 3000); // Update every 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Simulate occasional task failures with notifications
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTasks(currentTasks => {
+        const runningTasks = currentTasks.filter(t => t.status === 'running');
+        if (runningTasks.length > 0 && Math.random() < 0.05) { // 5% chance every 10 seconds
+          const randomTask = runningTasks[Math.floor(Math.random() * runningTasks.length)];
+          toast({
+            title: "Task Failed ⚠️",
+            description: `${randomTask.name} encountered an error and needs attention`,
+            variant: "destructive"
+          });
+          return currentTasks.map(task => 
+            task.id === randomTask.id 
+              ? { ...task, status: 'failed' as const }
+              : task
+          );
+        }
+        return currentTasks;
+      });
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   const getStatusIcon = (status: Task['status']) => {
     switch (status) {
@@ -370,7 +429,8 @@ const ExecutionEngine = () => {
         <TabsList>
           <TabsTrigger value="tasks">Active Tasks</TabsTrigger>
           <TabsTrigger value="resources">System Resources</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="monitoring">Real-time Monitor</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="queue">Task Queue</TabsTrigger>
         </TabsList>
 
@@ -615,36 +675,12 @@ const ExecutionEngine = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="performance" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Task Completion Rate</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 border border-gray-200 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <TrendingUp className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">Performance metrics chart</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <TabsContent value="monitoring">
+          <RealTimeMonitor />
+        </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Resource Usage Over Time</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 border border-gray-200 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <Activity className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">Resource usage timeline</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="analytics">
+          <AnalyticsDashboard />
         </TabsContent>
 
         <TabsContent value="queue" className="space-y-6">
