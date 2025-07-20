@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Camera, 
@@ -166,6 +167,13 @@ const MultiModalProcessing = () => {
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
   const [selectedTaskDetails, setSelectedTaskDetails] = useState<MultiModalTask | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    status: 'all',
+    confidence: [0, 100],
+    dateRange: 'all',
+    processingTime: [0, 10]
+  });
 
   const getTypeIcon = (type: MultiModalTask['type']) => {
     const icons = {
@@ -207,9 +215,21 @@ const MultiModalProcessing = () => {
     }
   };
 
-  const filteredTasks = tasks.filter(task => 
-    selectedType === 'all' || task.type === selectedType
-  );
+  const filteredTasks = tasks.filter(task => {
+    // Type filter
+    if (selectedType !== 'all' && task.type !== selectedType) return false;
+    
+    // Status filter from advanced filters
+    if (filters.status !== 'all' && task.status !== filters.status) return false;
+    
+    // Confidence filter
+    if (task.confidence > 0 && (task.confidence < filters.confidence[0] || task.confidence > filters.confidence[1])) return false;
+    
+    // Processing time filter
+    if (task.processingTime > 0 && (task.processingTime < filters.processingTime[0] || task.processingTime > filters.processingTime[1])) return false;
+    
+    return true;
+  });
 
   const taskStats = {
     total: tasks.length,
@@ -611,10 +631,134 @@ const MultiModalProcessing = () => {
               <option value="video">Video</option>
               <option value="audio">Audio</option>
             </select>
-            <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              More Filters
-            </Button>
+            <Dialog open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  More Filters
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Advanced Filters</DialogTitle>
+                  <DialogDescription>
+                    Apply advanced filters to refine your task search
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6">
+                  {/* Status Filter */}
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <select
+                      value={filters.status}
+                      onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                      className="w-full border rounded-md px-3 py-2 bg-background"
+                    >
+                      <option value="all">All Statuses</option>
+                      <option value="processing">Processing</option>
+                      <option value="completed">Completed</option>
+                      <option value="failed">Failed</option>
+                      <option value="queued">Queued</option>
+                    </select>
+                  </div>
+
+                  {/* Confidence Range */}
+                  <div className="space-y-3">
+                    <Label>Confidence Score Range</Label>
+                    <div className="px-3">
+                      <Slider
+                        value={filters.confidence}
+                        onValueChange={(value) => setFilters(prev => ({ ...prev, confidence: value }))}
+                        max={100}
+                        min={0}
+                        step={1}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                        <span>{filters.confidence[0]}%</span>
+                        <span>{filters.confidence[1]}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Processing Time Range */}
+                  <div className="space-y-3">
+                    <Label>Processing Time Range (seconds)</Label>
+                    <div className="px-3">
+                      <Slider
+                        value={filters.processingTime}
+                        onValueChange={(value) => setFilters(prev => ({ ...prev, processingTime: value }))}
+                        max={10}
+                        min={0}
+                        step={0.1}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                        <span>{filters.processingTime[0]}s</span>
+                        <span>{filters.processingTime[1]}s</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Date Range */}
+                  <div className="space-y-2">
+                    <Label>Date Range</Label>
+                    <select
+                      value={filters.dateRange}
+                      onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
+                      className="w-full border rounded-md px-3 py-2 bg-background"
+                    >
+                      <option value="all">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="week">This Week</option>
+                      <option value="month">This Month</option>
+                      <option value="quarter">This Quarter</option>
+                    </select>
+                  </div>
+
+                  {/* Active Filters Summary */}
+                  <div className="border-t pt-4">
+                    <p className="text-sm font-medium mb-2">Active Filters:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {filters.status !== 'all' && (
+                        <Badge variant="secondary">Status: {filters.status}</Badge>
+                      )}
+                      {(filters.confidence[0] > 0 || filters.confidence[1] < 100) && (
+                        <Badge variant="secondary">
+                          Confidence: {filters.confidence[0]}%-{filters.confidence[1]}%
+                        </Badge>
+                      )}
+                      {(filters.processingTime[0] > 0 || filters.processingTime[1] < 10) && (
+                        <Badge variant="secondary">
+                          Time: {filters.processingTime[0]}s-{filters.processingTime[1]}s
+                        </Badge>
+                      )}
+                      {filters.dateRange !== 'all' && (
+                        <Badge variant="secondary">Period: {filters.dateRange}</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 justify-end pt-4 border-t">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setFilters({
+                        status: 'all',
+                        confidence: [0, 100],
+                        dateRange: 'all',
+                        processingTime: [0, 10]
+                      })}
+                    >
+                      Reset Filters
+                    </Button>
+                    <Button onClick={() => setIsFiltersOpen(false)}>
+                      Apply Filters
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Tasks List */}
