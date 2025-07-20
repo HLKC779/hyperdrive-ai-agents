@@ -163,6 +163,7 @@ const MultiModalProcessing = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [taskName, setTaskName] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isConfigureOpen, setIsConfigureOpen] = useState(false);
 
   const getTypeIcon = (type: MultiModalTask['type']) => {
     const icons = {
@@ -283,6 +284,17 @@ const MultiModalProcessing = () => {
     }
   };
 
+  const handleModelToggle = (modelId: string) => {
+    setModels(prev => prev.map(model => 
+      model.id === modelId 
+        ? { 
+            ...model, 
+            status: model.status === 'active' ? 'loading' : 'active' as ProcessingModel['status']
+          }
+        : model
+    ));
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -357,10 +369,121 @@ const MultiModalProcessing = () => {
               </div>
             </DialogContent>
           </Dialog>
-          <Button variant="outline">
-            <Settings className="h-4 w-4 mr-2" />
-            Configure Models
-          </Button>
+          <Dialog open={isConfigureOpen} onOpenChange={setIsConfigureOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Settings className="h-4 w-4 mr-2" />
+                Configure Models
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Configure AI Models</DialogTitle>
+                <DialogDescription>
+                  Manage and configure your AI processing models
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {models.map((model) => (
+                    <Card key={model.id} className="relative">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Brain className="h-5 w-5" />
+                            {model.name}
+                          </CardTitle>
+                          <Badge 
+                            variant={model.status === 'active' ? 'default' : 'secondary'}
+                            className="cursor-pointer"
+                            onClick={() => handleModelToggle(model.id)}
+                          >
+                            <div className={`w-2 h-2 rounded-full mr-2 ${getModelStatusColor(model.status)}`} />
+                            {model.status}
+                          </Badge>
+                        </div>
+                        <CardDescription className="capitalize">
+                          {model.type} Processing Model
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-3 gap-3 text-sm">
+                          <div>
+                            <p className="text-muted-foreground">Accuracy</p>
+                            <p className="font-medium">{model.accuracy}%</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Speed</p>
+                            <p className="font-medium">{model.speed}s</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Memory</p>
+                            <p className="font-medium">{model.memoryUsage}GB</p>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-2">Capabilities</p>
+                          <div className="flex flex-wrap gap-1">
+                            {model.capabilities.slice(0, 3).map((capability, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {capability}
+                              </Badge>
+                            ))}
+                            {model.capabilities.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{model.capabilities.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button 
+                            variant={model.status === 'active' ? 'destructive' : 'default'}
+                            size="sm"
+                            onClick={() => handleModelToggle(model.id)}
+                            className="flex-1"
+                          >
+                            {model.status === 'active' ? (
+                              <>
+                                <Pause className="h-3 w-3 mr-1" />
+                                Deactivate
+                              </>
+                            ) : (
+                              <>
+                                <Play className="h-3 w-3 mr-1" />
+                                Activate
+                              </>
+                            )}
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                
+                <div className="flex justify-between items-center pt-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    {activeModels} of {models.length} models active
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add Model
+                    </Button>
+                    <Button size="sm" onClick={() => setIsConfigureOpen(false)}>
+                      Done
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
