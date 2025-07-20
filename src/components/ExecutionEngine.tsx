@@ -13,6 +13,7 @@ import RealTimeMonitor from './RealTimeMonitor';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import WorkflowAutomation from './WorkflowAutomation';
 import EnhancedUX from './EnhancedUX';
+import SmartFeatures from './SmartFeatures';
 import { 
   Play, 
   Pause, 
@@ -430,6 +431,7 @@ const ExecutionEngine = () => {
       <Tabs defaultValue="tasks" className="space-y-6">
         <TabsList>
           <TabsTrigger value="tasks">Active Tasks</TabsTrigger>
+          <TabsTrigger value="smart">Smart AI Features</TabsTrigger>
           <TabsTrigger value="workflow">Workflow Automation</TabsTrigger>
           <TabsTrigger value="enhanced">Enhanced UX</TabsTrigger>
           <TabsTrigger value="monitoring">Real-time Monitor</TabsTrigger>
@@ -677,6 +679,10 @@ const ExecutionEngine = () => {
               );
             })}
           </div>
+        </TabsContent>
+
+        <TabsContent value="smart">
+          <SmartFeatures />
         </TabsContent>
 
         <TabsContent value="workflow">
