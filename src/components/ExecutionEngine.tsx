@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { toast } from "@/hooks/use-toast";
 import RealTimeMonitor from './RealTimeMonitor';
 import AnalyticsDashboard from './AnalyticsDashboard';
+import WorkflowAutomation from './WorkflowAutomation';
+import EnhancedUX from './EnhancedUX';
 import { 
   Play, 
   Pause, 
@@ -428,9 +430,11 @@ const ExecutionEngine = () => {
       <Tabs defaultValue="tasks" className="space-y-6">
         <TabsList>
           <TabsTrigger value="tasks">Active Tasks</TabsTrigger>
-          <TabsTrigger value="resources">System Resources</TabsTrigger>
+          <TabsTrigger value="workflow">Workflow Automation</TabsTrigger>
+          <TabsTrigger value="enhanced">Enhanced UX</TabsTrigger>
           <TabsTrigger value="monitoring">Real-time Monitor</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="resources">System Resources</TabsTrigger>
           <TabsTrigger value="queue">Task Queue</TabsTrigger>
         </TabsList>
 
@@ -673,6 +677,14 @@ const ExecutionEngine = () => {
               );
             })}
           </div>
+        </TabsContent>
+
+        <TabsContent value="workflow">
+          <WorkflowAutomation />
+        </TabsContent>
+
+        <TabsContent value="enhanced">
+          <EnhancedUX />
         </TabsContent>
 
         <TabsContent value="monitoring">
