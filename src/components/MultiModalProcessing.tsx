@@ -174,6 +174,8 @@ const MultiModalProcessing = () => {
     dateRange: 'all',
     processingTime: [0, 10]
   });
+  const [selectedModelConfig, setSelectedModelConfig] = useState<ProcessingModel | null>(null);
+  const [isModelConfigOpen, setIsModelConfigOpen] = useState(false);
 
   const getTypeIcon = (type: MultiModalTask['type']) => {
     const icons = {
@@ -355,6 +357,11 @@ const MultiModalProcessing = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  const handleModelConfigure = (model: ProcessingModel) => {
+    setSelectedModelConfig(model);
+    setIsModelConfigOpen(true);
   };
 
   return (
@@ -906,17 +913,29 @@ const MultiModalProcessing = () => {
 
                   <div className="flex gap-2">
                     {model.status === 'active' ? (
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleModelToggle(model.id)}
+                      >
                         <Pause className="h-3 w-3 mr-1" />
                         Pause
                       </Button>
                     ) : (
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleModelToggle(model.id)}
+                      >
                         <Play className="h-3 w-3 mr-1" />
                         Activate
                       </Button>
                     )}
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleModelConfigure(model)}
+                    >
                       <Settings className="h-3 w-3 mr-1" />
                       Configure
                     </Button>
@@ -1271,6 +1290,183 @@ const MultiModalProcessing = () => {
                 </Button>
                 <Button onClick={() => setIsDetailsOpen(false)}>
                   Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Individual Model Configuration Dialog */}
+      <Dialog open={isModelConfigOpen} onOpenChange={setIsModelConfigOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Configure Model: {selectedModelConfig?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Adjust model parameters and settings for optimal performance
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedModelConfig && (
+            <div className="space-y-6">
+              {/* Model Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Model Status</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Current Status</p>
+                      <Badge variant={selectedModelConfig.status === 'active' ? 'default' : 'secondary'}>
+                        <div className={`w-2 h-2 rounded-full mr-2 ${getModelStatusColor(selectedModelConfig.status)}`} />
+                        {selectedModelConfig.status}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Model Type</p>
+                      <p className="font-medium capitalize">{selectedModelConfig.type}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={selectedModelConfig.status === 'active' ? 'destructive' : 'default'}
+                      size="sm"
+                      onClick={() => {
+                        handleModelToggle(selectedModelConfig.id);
+                        setSelectedModelConfig(prev => prev ? {
+                          ...prev,
+                          status: prev.status === 'active' ? 'loading' : 'active' as ProcessingModel['status']
+                        } : null);
+                      }}
+                    >
+                      {selectedModelConfig.status === 'active' ? (
+                        <>
+                          <Pause className="h-3 w-3 mr-1" />
+                          Deactivate Model
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-3 w-3 mr-1" />
+                          Activate Model
+                        </>
+                      )}
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <RotateCcw className="h-3 w-3 mr-1" />
+                      Restart Model
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Performance Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Performance Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-sm">Accuracy Target</Label>
+                      <div className="mt-2">
+                        <p className="text-2xl font-bold">{selectedModelConfig.accuracy}%</p>
+                        <Progress value={selectedModelConfig.accuracy} className="mt-1 h-2" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm">Speed Optimization</Label>
+                      <div className="mt-2">
+                        <p className="text-2xl font-bold">{selectedModelConfig.speed}s</p>
+                        <p className="text-xs text-muted-foreground">Processing time per task</p>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm">Memory Usage</Label>
+                      <div className="mt-2">
+                        <p className="text-2xl font-bold">{selectedModelConfig.memoryUsage}GB</p>
+                        <Progress value={(selectedModelConfig.memoryUsage / 5) * 100} className="mt-1 h-2" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t pt-4">
+                    <Label className="text-sm">Resource Allocation</Label>
+                    <div className="mt-2 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>CPU Usage</span>
+                        <span>65%</span>
+                      </div>
+                      <Progress value={65} className="h-2" />
+                      <div className="flex justify-between text-sm">
+                        <span>GPU Usage</span>
+                        <span>45%</span>
+                      </div>
+                      <Progress value={45} className="h-2" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Capabilities */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Model Capabilities</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Available Features</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedModelConfig.capabilities.map((capability, index) => (
+                          <Badge key={index} variant="outline">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            {capability}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-3">
+                      <p className="text-sm text-muted-foreground mb-2">Configuration Options</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm">Auto-scaling</Label>
+                          <input type="checkbox" className="rounded" defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm">Error Recovery</Label>
+                          <input type="checkbox" className="rounded" defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm">Load Balancing</Label>
+                          <input type="checkbox" className="rounded" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm">Cache Results</Label>
+                          <input type="checkbox" className="rounded" defaultChecked />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-end pt-4 border-t">
+                <Button variant="outline">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Config
+                </Button>
+                <Button variant="outline">
+                  Reset to Defaults
+                </Button>
+                <Button onClick={() => setIsModelConfigOpen(false)}>
+                  Save Changes
                 </Button>
               </div>
             </div>
