@@ -159,7 +159,10 @@ const MultiModalProcessing = () => {
   const [models, setModels] = useState<ProcessingModel[]>(mockModels);
   const [selectedType, setSelectedType] = useState<string>('all');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [uploadType, setUploadType] = useState<string>('vision');
+  const [uploadType, setUploadType] = useState<string>('document');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [taskName, setTaskName] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const getTypeIcon = (type: MultiModalTask['type']) => {
     const icons = {
@@ -216,6 +219,70 @@ const MultiModalProcessing = () => {
   const activeModels = models.filter(m => m.status === 'active').length;
   const avgAccuracy = models.reduce((acc, m) => acc + m.accuracy, 0) / models.length;
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleStartProcessing = async () => {
+    if (!selectedFile || !taskName.trim()) {
+      alert('Please select a file and enter a task name');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Create new task
+      const newTask: MultiModalTask = {
+        id: Date.now().toString(),
+        name: taskName,
+        type: uploadType as MultiModalTask['type'],
+        status: 'processing',
+        inputFile: selectedFile.name,
+        outputData: null,
+        confidence: 0,
+        processingTime: 0,
+        timestamp: 'Just now'
+      };
+
+      // Add to tasks list
+      setTasks(prev => [newTask, ...prev]);
+
+      // Simulate processing
+      setTimeout(() => {
+        setTasks(prev => prev.map(task => 
+          task.id === newTask.id 
+            ? {
+                ...task,
+                status: 'completed' as const,
+                confidence: Math.floor(Math.random() * 20) + 80,
+                processingTime: Math.random() * 5 + 1,
+                outputData: {
+                  text: `Processed content from ${selectedFile.name}`,
+                  entities: ['Sample Entity 1', 'Sample Entity 2'],
+                  confidence: Math.floor(Math.random() * 20) + 80
+                }
+              }
+            : task
+        ));
+      }, 3000);
+
+      // Reset form and close dialog
+      setSelectedFile(null);
+      setTaskName('');
+      setIsUploadOpen(false);
+      
+    } catch (error) {
+      console.error('Processing failed:', error);
+      alert('Processing failed. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -259,13 +326,34 @@ const MultiModalProcessing = () => {
                 </div>
                 <div>
                   <Label htmlFor="file-upload">Upload File</Label>
-                  <Input id="file-upload" type="file" />
+                  <Input 
+                    id="file-upload" 
+                    type="file" 
+                    onChange={handleFileChange}
+                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.mp3,.mp4,.wav"
+                  />
+                  {selectedFile && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Selected: {selectedFile.name}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="task-name">Task Name</Label>
-                  <Input id="task-name" placeholder="Enter task description" />
+                  <Input 
+                    id="task-name" 
+                    placeholder="Enter task description"
+                    value={taskName}
+                    onChange={(e) => setTaskName(e.target.value)}
+                  />
                 </div>
-                <Button className="w-full">Start Processing</Button>
+                <Button 
+                  className="w-full" 
+                  onClick={handleStartProcessing}
+                  disabled={isProcessing || !selectedFile || !taskName.trim()}
+                >
+                  {isProcessing ? 'Processing...' : 'Start Processing'}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
