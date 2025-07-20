@@ -10,6 +10,9 @@ import Reasoning from "./pages/Reasoning";
 import Tools from "./pages/Tools";
 import Knowledge from "./pages/Knowledge";
 import Execution from "./pages/Execution";
+import Monitoring from "./pages/Monitoring";
+import MultiModal from "./pages/MultiModal";
+import Security from "./pages/Security";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +31,9 @@ const App = () => (
           <Route path="/tools" element={<Tools />} />
           <Route path="/knowledge" element={<Knowledge />} />
           <Route path="/execution" element={<Execution />} />
+          <Route path="/monitoring" element={<Monitoring />} />
+          <Route path="/multimodal" element={<MultiModal />} />
+          <Route path="/security" element={<Security />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
