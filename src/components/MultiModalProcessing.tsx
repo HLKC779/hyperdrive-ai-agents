@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 import { 
   Camera, 
   Mic, 
@@ -153,6 +154,26 @@ const mockModels: ProcessingModel[] = [
     memoryUsage: 0.8,
     capabilities: ['Document Parsing', 'Entity Extraction', 'Table Detection']
   }
+];
+
+// Mock data for analytics charts
+const processingVolumeData = [
+  { name: 'Jan', tasks: 45, documents: 20, images: 15, audio: 10 },
+  { name: 'Feb', tasks: 52, documents: 25, images: 18, audio: 9 },
+  { name: 'Mar', tasks: 48, documents: 22, images: 16, audio: 10 },
+  { name: 'Apr', tasks: 61, documents: 30, images: 20, audio: 11 },
+  { name: 'May', tasks: 55, documents: 28, images: 17, audio: 10 },
+  { name: 'Jun', tasks: 67, documents: 32, images: 22, audio: 13 },
+  { name: 'Jul', tasks: 72, documents: 35, images: 24, audio: 13 }
+];
+
+const accuracyTrendsData = [
+  { name: 'Week 1', gpt4: 94.2, whisper: 96.1, claude: 92.8, clip: 89.5 },
+  { name: 'Week 2', gpt4: 94.8, whisper: 96.3, claude: 93.2, clip: 90.1 },
+  { name: 'Week 3', gpt4: 95.1, whisper: 96.5, claude: 93.6, clip: 90.8 },
+  { name: 'Week 4', gpt4: 95.5, whisper: 96.8, claude: 94.1, clip: 91.2 },
+  { name: 'Week 5', gpt4: 95.8, whisper: 97.0, claude: 94.4, clip: 91.8 },
+  { name: 'Week 6', gpt4: 96.1, whisper: 97.2, claude: 94.7, clip: 92.1 }
 ];
 
 const MultiModalProcessing = () => {
@@ -1072,11 +1093,36 @@ const MultiModalProcessing = () => {
                 <CardDescription>Tasks processed over time</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64 border border-gray-200 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <Activity className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">Processing volume chart</p>
-                  </div>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={processingVolumeData}>
+                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                      <XAxis 
+                        dataKey="name" 
+                        fontSize={12}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <YAxis 
+                        fontSize={12}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--background))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px'
+                        }}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="tasks" 
+                        stroke="hsl(var(--primary))" 
+                        fill="hsl(var(--primary))"
+                        fillOpacity={0.3}
+                        strokeWidth={2}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
@@ -1087,15 +1133,97 @@ const MultiModalProcessing = () => {
                 <CardDescription>Model performance over time</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64 border border-gray-200 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <TrendingUp className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">Accuracy trends chart</p>
-                  </div>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={accuracyTrendsData}>
+                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                      <XAxis 
+                        dataKey="name" 
+                        fontSize={12}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <YAxis 
+                        domain={['dataMin - 5', 'dataMax + 2']}
+                        fontSize={12}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--background))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px'
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="gpt4" 
+                        stroke="#8884d8" 
+                        strokeWidth={2}
+                        name="GPT-4 Vision"
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="whisper" 
+                        stroke="#82ca9d" 
+                        strokeWidth={2}
+                        name="Whisper"
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="claude" 
+                        stroke="#ffc658" 
+                        strokeWidth={2}
+                        name="Claude"
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="clip" 
+                        stroke="#ff7300" 
+                        strokeWidth={2}
+                        name="CLIP"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
           </div>
+
+          {/* Processing Breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Processing Breakdown by Type</CardTitle>
+              <CardDescription>Task distribution across different processing types</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={processingVolumeData}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis 
+                      dataKey="name" 
+                      fontSize={12}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <YAxis 
+                      fontSize={12}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px'
+                      }}
+                    />
+                    <Bar dataKey="documents" stackId="a" fill="#8884d8" name="Documents" />
+                    <Bar dataKey="images" stackId="a" fill="#82ca9d" name="Images" />
+                    <Bar dataKey="audio" stackId="a" fill="#ffc658" name="Audio" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>
