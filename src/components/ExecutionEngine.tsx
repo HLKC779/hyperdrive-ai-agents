@@ -152,6 +152,12 @@ const ExecutionEngine = () => {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+  const [newTask, setNewTask] = useState({
+    name: '',
+    type: 'workflow' as Task['type'],
+    priority: 'medium' as Task['priority'],
+    description: ''
+  });
 
   const getStatusIcon = (status: Task['status']) => {
     switch (status) {
@@ -232,6 +238,31 @@ const ExecutionEngine = () => {
     }));
   };
 
+  const handleCreateTask = () => {
+    if (!newTask.name.trim() || !newTask.description.trim()) {
+      return;
+    }
+
+    const task: Task = {
+      id: Date.now().toString(),
+      name: newTask.name,
+      type: newTask.type,
+      status: 'queued',
+      priority: newTask.priority,
+      progress: 0,
+      startTime: 'Not started',
+      estimatedCompletion: 'Calculating...',
+      resourceUsage: { cpu: 0, memory: 0, storage: 0, network: 0 },
+      assignedAgent: `Agent-${newTask.type.toUpperCase()}-${Math.floor(Math.random() * 100).toString().padStart(2, '0')}`,
+      description: newTask.description,
+      logs: ['Task created and queued for execution']
+    };
+
+    setTasks([...tasks, task]);
+    setNewTask({ name: '', type: 'workflow', priority: 'medium', description: '' });
+    setIsCreateTaskOpen(false);
+  };
+
   const filteredTasks = tasks.filter(task => {
     const matchesStatus = selectedStatus === 'all' || task.status === selectedStatus;
     const matchesType = selectedType === 'all' || task.type === selectedType;
@@ -275,12 +306,22 @@ const ExecutionEngine = () => {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="task-name">Task Name</Label>
-                <Input id="task-name" placeholder="Enter task name" />
+                <Input 
+                  id="task-name" 
+                  placeholder="Enter task name" 
+                  value={newTask.name}
+                  onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="task-type">Type</Label>
-                  <select id="task-type" className="w-full border rounded-md px-3 py-2">
+                  <select 
+                    id="task-type" 
+                    className="w-full border rounded-md px-3 py-2"
+                    value={newTask.type}
+                    onChange={(e) => setNewTask({ ...newTask, type: e.target.value as Task['type'] })}
+                  >
                     <option value="workflow">Workflow</option>
                     <option value="computation">Computation</option>
                     <option value="api">API Task</option>
@@ -290,7 +331,12 @@ const ExecutionEngine = () => {
                 </div>
                 <div>
                   <Label htmlFor="priority">Priority</Label>
-                  <select id="priority" className="w-full border rounded-md px-3 py-2">
+                  <select 
+                    id="priority" 
+                    className="w-full border rounded-md px-3 py-2"
+                    value={newTask.priority}
+                    onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as Task['priority'] })}
+                  >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
@@ -300,9 +346,21 @@ const ExecutionEngine = () => {
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
-                <Textarea id="description" placeholder="Describe the task..." rows={3} />
+                <Textarea 
+                  id="description" 
+                  placeholder="Describe the task..." 
+                  rows={3} 
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                />
               </div>
-              <Button className="w-full">Create and Queue Task</Button>
+              <Button 
+                className="w-full" 
+                onClick={handleCreateTask}
+                disabled={!newTask.name.trim() || !newTask.description.trim()}
+              >
+                Create and Queue Task
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
