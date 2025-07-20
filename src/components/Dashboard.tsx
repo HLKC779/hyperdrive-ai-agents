@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,11 @@ import {
   TrendingUp,
   CheckCircle,
   AlertCircle,
-  Clock
+  Clock,
+  ArrowRight,
+  Code,
+  Search,
+  Globe
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -236,11 +241,46 @@ const Dashboard = () => {
           <TabsContent value="agents">
             <Card>
               <CardHeader>
-                <CardTitle>Agent Management</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Agent Management
+                  </span>
+                  <Link to="/agents">
+                    <Button variant="outline" size="sm">
+                      View Full Page <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
+                </CardTitle>
                 <CardDescription>Configure and monitor your AI agents</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Agent management interface coming soon...</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium">Research Agent</h4>
+                      <Badge variant="default">Active</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">3 instances running</p>
+                    <Progress value={96} className="h-2 mt-2" />
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium">Code Agent</h4>
+                      <Badge variant="default">Active</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">2 instances running</p>
+                    <Progress value={92} className="h-2 mt-2" />
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium">Data Agent</h4>
+                      <Badge variant="default">Active</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">4 instances running</p>
+                    <Progress value={98} className="h-2 mt-2" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -248,14 +288,38 @@ const Dashboard = () => {
           <TabsContent value="memory">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
-                  Memory Systems
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Database className="h-5 w-5" />
+                    Memory Systems
+                  </span>
+                  <Link to="/memory">
+                    <Button variant="outline" size="sm">
+                      View Full Page <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
                 </CardTitle>
                 <CardDescription>Hybrid memory architecture management</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Memory system interface coming soon...</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Short-term Memory</h4>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Usage</span>
+                      <span>2.4GB / 8GB</span>
+                    </div>
+                    <Progress value={30} className="h-2" />
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Knowledge Graph</h4>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Nodes</span>
+                      <span>15,420</span>
+                    </div>
+                    <Progress value={75} className="h-2" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -263,14 +327,32 @@ const Dashboard = () => {
           <TabsContent value="reasoning">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Network className="h-5 w-5" />
-                  Reasoning Engine
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Brain className="h-5 w-5" />
+                    Reasoning Engine
+                  </span>
+                  <Link to="/reasoning">
+                    <Button variant="outline" size="sm">
+                      View Full Page <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
                 </CardTitle>
                 <CardDescription>Advanced reasoning and decision making</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Reasoning engine interface coming soon...</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Active Reasoning Tasks</h4>
+                    <p className="text-2xl font-bold">8</p>
+                    <p className="text-sm text-muted-foreground">Currently processing</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Confidence Score</h4>
+                    <p className="text-2xl font-bold">94.2%</p>
+                    <p className="text-sm text-muted-foreground">Average confidence</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -278,11 +360,43 @@ const Dashboard = () => {
           <TabsContent value="tools">
             <Card>
               <CardHeader>
-                <CardTitle>Tool Integration</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Code className="h-5 w-5" />
+                    Tool Integration
+                  </span>
+                  <Link to="/tools">
+                    <Button variant="outline" size="sm">
+                      View Full Page <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
+                </CardTitle>
                 <CardDescription>Manage external tools and APIs</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Tool integration interface coming soon...</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-center gap-3 p-3 border rounded-lg">
+                    <Search className="h-5 w-5 text-green-500" />
+                    <div>
+                      <p className="font-medium">Web Search API</p>
+                      <p className="text-sm text-muted-foreground">Active</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 border rounded-lg">
+                    <Code className="h-5 w-5 text-green-500" />
+                    <div>
+                      <p className="font-medium">Code Executor</p>
+                      <p className="text-sm text-muted-foreground">Active</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 border rounded-lg">
+                    <Database className="h-5 w-5 text-red-500" />
+                    <div>
+                      <p className="font-medium">Vector DB</p>
+                      <p className="text-sm text-muted-foreground">Error</p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -290,14 +404,34 @@ const Dashboard = () => {
           <TabsContent value="monitoring">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  System Monitoring
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    System Monitoring
+                  </span>
+                  <Link to="/execution">
+                    <Button variant="outline" size="sm">
+                      View Execution Engine <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
                 </CardTitle>
                 <CardDescription>Performance analytics and system health</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Monitoring dashboard coming soon...</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">System Health</h4>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">All systems operational</span>
+                    </div>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Active Tasks</h4>
+                    <p className="text-2xl font-bold">23</p>
+                    <p className="text-sm text-muted-foreground">Currently running</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
