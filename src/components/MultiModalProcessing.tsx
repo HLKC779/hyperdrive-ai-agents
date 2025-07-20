@@ -164,6 +164,8 @@ const MultiModalProcessing = () => {
   const [taskName, setTaskName] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConfigureOpen, setIsConfigureOpen] = useState(false);
+  const [selectedTaskDetails, setSelectedTaskDetails] = useState<MultiModalTask | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const getTypeIcon = (type: MultiModalTask['type']) => {
     const icons = {
@@ -293,6 +295,46 @@ const MultiModalProcessing = () => {
           }
         : model
     ));
+  };
+
+  const handleViewDetails = (task: MultiModalTask) => {
+    setSelectedTaskDetails(task);
+    setIsDetailsOpen(true);
+  };
+
+  const handleDownloadResults = (task: MultiModalTask) => {
+    if (!task.outputData) {
+      alert('No results available for download');
+      return;
+    }
+
+    // Create downloadable content
+    const resultData = {
+      taskId: task.id,
+      taskName: task.name,
+      inputFile: task.inputFile,
+      processingType: task.type,
+      processingTime: task.processingTime,
+      confidence: task.confidence,
+      timestamp: task.timestamp,
+      results: task.outputData
+    };
+
+    // Convert to JSON and create blob
+    const dataStr = JSON.stringify(resultData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    
+    // Create download link
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${task.name.replace(/\s+/g, '_')}_results.json`;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -637,11 +679,16 @@ const MultiModalProcessing = () => {
                     )}
 
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => handleViewDetails(task)}>
                         <Eye className="h-3 w-3 mr-1" />
                         View Details
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleDownloadResults(task)}
+                        disabled={!task.outputData}
+                      >
                         <Download className="h-3 w-3 mr-1" />
                         Download Results
                       </Button>
@@ -915,6 +962,177 @@ const MultiModalProcessing = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Task Details Dialog */}
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Task Details
+            </DialogTitle>
+            <DialogDescription>
+              Comprehensive information about the processing task
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedTaskDetails && (
+            <div className="space-y-6">
+              {/* Task Overview */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Task Overview</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Task Name</p>
+                      <p className="font-medium">{selectedTaskDetails.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Task ID</p>
+                      <p className="font-medium font-mono text-xs">{selectedTaskDetails.id}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Input File</p>
+                      <p className="font-medium">{selectedTaskDetails.inputFile}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Processing Type</p>
+                      <Badge variant="outline" className="capitalize">
+                        {selectedTaskDetails.type}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Status</p>
+                      <Badge variant={getStatusVariant(selectedTaskDetails.status)}>
+                        <div className="flex items-center space-x-1">
+                          {getStatusIcon(selectedTaskDetails.status)}
+                          <span>{selectedTaskDetails.status}</span>
+                        </div>
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Timestamp</p>
+                      <p className="font-medium">{selectedTaskDetails.timestamp}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Performance Metrics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Performance Metrics</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Processing Time</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-2xl font-bold">
+                          {selectedTaskDetails.processingTime > 0 
+                            ? `${selectedTaskDetails.processingTime.toFixed(1)}s` 
+                            : 'In progress...'}
+                        </p>
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Confidence Score</p>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <p className="text-2xl font-bold">
+                            {selectedTaskDetails.confidence > 0 
+                              ? `${selectedTaskDetails.confidence}%` 
+                              : 'Calculating...'}
+                          </p>
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        </div>
+                        {selectedTaskDetails.confidence > 0 && (
+                          <Progress value={selectedTaskDetails.confidence} className="w-full h-3" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Output Results */}
+              {selectedTaskDetails.outputData && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Processing Results</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="bg-muted/50 rounded-lg p-4">
+                        <p className="text-sm font-medium mb-3">Raw Output Data:</p>
+                        <pre className="text-xs bg-background p-3 rounded border overflow-x-auto max-h-64">
+                          {JSON.stringify(selectedTaskDetails.outputData, null, 2)}
+                        </pre>
+                      </div>
+                      
+                      {/* Formatted Results */}
+                      <div className="grid grid-cols-1 gap-4">
+                        {selectedTaskDetails.outputData.text && (
+                          <div>
+                            <p className="text-sm font-medium mb-2">Extracted Text:</p>
+                            <p className="text-sm bg-muted/30 p-3 rounded border">
+                              {selectedTaskDetails.outputData.text}
+                            </p>
+                          </div>
+                        )}
+                        
+                        {selectedTaskDetails.outputData.entities && (
+                          <div>
+                            <p className="text-sm font-medium mb-2">Identified Entities:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedTaskDetails.outputData.entities.map((entity: string, index: number) => (
+                                <Badge key={index} variant="secondary">
+                                  {entity}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {selectedTaskDetails.outputData.objects && (
+                          <div>
+                            <p className="text-sm font-medium mb-2">Detected Objects:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedTaskDetails.outputData.objects.map((object: string, index: number) => (
+                                <Badge key={index} variant="outline">
+                                  {object}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-end pt-4 border-t">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleDownloadResults(selectedTaskDetails)}
+                  disabled={!selectedTaskDetails.outputData}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Results
+                </Button>
+                <Button onClick={() => setIsDetailsOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
