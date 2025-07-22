@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,49 @@ interface MemoryStore {
 const MemorySystem = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMemoryType, setSelectedMemoryType] = useState<string>('all');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isCleaning, setIsCleaning] = useState(false);
+  const { toast } = useToast();
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      // Simulate memory synchronization process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      toast({
+        title: "Memory Sync Complete",
+        description: "All memory stores have been synchronized successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Sync Failed",
+        description: "Failed to synchronize memory stores. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleCleanup = async () => {
+    setIsCleaning(true);
+    try {
+      // Simulate memory cleanup process
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      toast({
+        title: "Memory Cleanup Complete",
+        description: "Removed 247 duplicate entries and freed 12.3 MB of storage.",
+      });
+    } catch (error) {
+      toast({
+        title: "Cleanup Failed",
+        description: "Failed to clean up memory stores. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCleaning(false);
+    }
+  };
 
   const memoryStores: MemoryStore[] = [
     {
@@ -165,13 +209,23 @@ const MemorySystem = () => {
           <p className="text-muted-foreground">Hybrid memory architecture management</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Sync
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleSync}
+            disabled={isSyncing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? 'Syncing...' : 'Sync'}
           </Button>
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleCleanup}
+            disabled={isCleaning}
+          >
             <Trash2 className="h-4 w-4 mr-2" />
-            Cleanup
+            {isCleaning ? 'Cleaning...' : 'Cleanup'}
           </Button>
         </div>
       </div>
