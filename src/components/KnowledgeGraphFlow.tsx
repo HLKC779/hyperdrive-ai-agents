@@ -138,6 +138,7 @@ const KnowledgeGraphFlow = () => {
   ], []);
 
   const initialEdges: Edge[] = useMemo(() => [
+    // Core ML relationships
     {
       id: 'e1-2',
       source: 'concept-1',
@@ -148,32 +149,34 @@ const KnowledgeGraphFlow = () => {
       style: { stroke: '#3b82f6' },
     },
     {
-      id: 'e1-3',
-      source: 'concept-1',
+      id: 'e2-3',
+      source: 'concept-2',
       target: 'concept-3',
       type: 'smoothstep',
       label: 'subset of',
       markerEnd: { type: MarkerType.ArrowClosed },
       style: { stroke: '#8b5cf6' },
     },
+    // Neural network methods
     {
       id: 'e2-4',
       source: 'concept-2',
       target: 'method-1',
       type: 'smoothstep',
-      label: 'uses',
+      label: 'trained with',
       markerEnd: { type: MarkerType.ArrowClosed },
       style: { stroke: '#f97316' },
     },
     {
-      id: 'e2-5',
-      source: 'concept-2',
+      id: 'e4-5',
+      source: 'method-1',
       target: 'method-2',
       type: 'smoothstep',
-      label: 'requires',
+      label: 'uses',
       markerEnd: { type: MarkerType.ArrowClosed },
       style: { stroke: '#f97316' },
     },
+    // Deep learning applications
     {
       id: 'e3-6',
       source: 'concept-3',
@@ -192,9 +195,10 @@ const KnowledgeGraphFlow = () => {
       markerEnd: { type: MarkerType.ArrowClosed },
       style: { stroke: '#ec4899' },
     },
+    // Framework relationships
     {
-      id: 'e2-8',
-      source: 'concept-2',
+      id: 'e1-8',
+      source: 'concept-1',
       target: 'entity-1',
       type: 'smoothstep',
       label: 'implemented in',
@@ -206,17 +210,38 @@ const KnowledgeGraphFlow = () => {
       source: 'concept-3',
       target: 'entity-2',
       type: 'smoothstep',
-      label: 'framework',
+      label: 'optimized for',
       markerEnd: { type: MarkerType.ArrowClosed },
       style: { stroke: '#eab308' },
     },
+    // Tool comparison
     {
       id: 'e8-9',
       source: 'entity-1',
       target: 'entity-2',
       type: 'smoothstep',
-      label: 'alternative to',
+      label: 'competes with',
       style: { stroke: '#6b7280', strokeDasharray: '5,5' },
+    },
+    // Method to application connections
+    {
+      id: 'e5-6',
+      source: 'method-2',
+      target: 'application-1',
+      type: 'smoothstep',
+      label: 'optimizes',
+      markerEnd: { type: MarkerType.ArrowClosed },
+      style: { stroke: '#10b981' },
+    },
+    // Cross-connections for richer graph
+    {
+      id: 'e2-7',
+      source: 'concept-2',
+      target: 'application-2',
+      type: 'smoothstep',
+      label: 'foundation for',
+      markerEnd: { type: MarkerType.ArrowClosed },
+      style: { stroke: '#6366f1' },
     },
   ], []);
 
