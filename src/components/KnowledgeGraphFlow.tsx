@@ -11,13 +11,36 @@ import {
   Node,
   MarkerType,
   Position,
+  Handle,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 // Knowledge Graph Node Types
 const KnowledgeNode = ({ data }: { data: any }) => {
   return (
-    <div className={`px-3 py-2 rounded-lg border-2 text-sm font-medium ${data.style}`}>
+    <div className={`px-3 py-2 rounded-lg border-2 text-sm font-medium ${data.style} relative`}>
+      {/* Connection handles */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ background: '#555', border: 'none', width: 8, height: 8 }}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        style={{ background: '#555', border: 'none', width: 8, height: 8 }}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{ background: '#555', border: 'none', width: 8, height: 8 }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={{ background: '#555', border: 'none', width: 8, height: 8 }}
+      />
+      
       <div className="text-center">
         <div className="text-xs opacity-75">{data.type}</div>
         <div>{data.label}</div>
@@ -253,24 +276,70 @@ const KnowledgeGraphFlow = () => {
     [setEdges]
   );
 
+  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    console.log('Node clicked:', node.data.label, `(Confidence: ${node.data.confidence}%)`);
+  }, []);
+
+  const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+    console.log('Edge clicked:', edge.label || 'Unlabeled edge');
+  }, []);
+
   return (
-    <div className="h-96 w-full border rounded-lg overflow-hidden bg-background">
+    <div className="h-96 w-full border rounded-lg overflow-hidden bg-background relative">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
         nodeTypes={nodeTypes}
         fitView
         attributionPosition="bottom-left"
-        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
-        minZoom={0.2}
-        maxZoom={2}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.75 }}
+        minZoom={0.3}
+        maxZoom={1.5}
+        nodesDraggable={true}
+        nodesConnectable={true}
+        elementsSelectable={true}
+        className="knowledge-graph-flow"
       >
-        <Background color="#aaa" gap={16} />
-        <Controls />
+        <Background 
+          color="#e5e7eb" 
+          gap={20} 
+          size={1}
+        />
+        <Controls 
+          showZoom={true}
+          showFitView={true}
+          showInteractive={true}
+          position="bottom-right"
+        />
       </ReactFlow>
+      
+      {/* Legend */}
+      <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm rounded-lg p-3 text-xs border shadow-sm">
+        <div className="font-semibold mb-2">Knowledge Types</div>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-blue-100 border border-blue-300"></div>
+            <span>Concepts</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-orange-100 border border-orange-300"></div>
+            <span>Methods</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-pink-100 border border-pink-300"></div>
+            <span>Applications</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded bg-yellow-100 border border-yellow-300"></div>
+            <span>Tools</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
