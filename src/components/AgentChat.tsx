@@ -13,8 +13,22 @@ import {
   Code,
   Lightbulb,
   Search,
-  Wrench
+  Wrench,
+  Paperclip,
+  Image as ImageIcon,
+  FileText,
+  File,
+  X
 } from 'lucide-react';
+
+interface UploadedFile {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  url: string;
+  preview?: string;
+}
 
 interface Message {
   id: string;
@@ -24,6 +38,7 @@ interface Message {
   agentId?: string;
   agentName?: string;
   category?: 'general' | 'technical' | 'code' | 'research';
+  files?: UploadedFile[];
 }
 
 interface AgentChatProps {
@@ -41,7 +56,7 @@ const AgentChat = ({ agents }: AgentChatProps) => {
     {
       id: '1',
       type: 'agent',
-      content: 'Hello! I\'m your AI assistant. I can help you with technical problems, code issues, research, and general questions. What can I help you with today?',
+      content: 'Hello! I\'m your AI assistant. I can help you with technical problems, code issues, research, and general questions. You can also upload files for me to analyze. What can I help you with today?',
       timestamp: new Date(),
       agentId: 'agent-001',
       agentName: 'Support Agent',
@@ -50,7 +65,9 @@ const AgentChat = ({ agents }: AgentChatProps) => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getAgentForQuery = (query: string): any => {
     const lowerQuery = query.toLowerCase();
@@ -77,6 +94,94 @@ const AgentChat = ({ agents }: AgentChatProps) => {
     }
   };
 
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) return <ImageIcon className="h-4 w-4" />;
+    if (fileType.includes('text') || fileType.includes('document')) return <FileText className="h-4 w-4" />;
+    return <File className="h-4 w-4" />;
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      const fileUrl = URL.createObjectURL(file);
+      const uploadedFile: UploadedFile = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: fileUrl,
+        preview: file.type.startsWith('image/') ? fileUrl : undefined
+      };
+      
+      setUploadedFiles(prev => [...prev, uploadedFile]);
+    });
+
+    // Clear the input
+    if (event.target) {
+      event.target.value = '';
+    }
+  };
+
+  const removeUploadedFile = (fileId: string) => {
+    setUploadedFiles(prev => {
+      const file = prev.find(f => f.id === fileId);
+      if (file) {
+        URL.revokeObjectURL(file.url);
+      }
+      return prev.filter(f => f.id !== fileId);
+    });
+  };
+
+  const generateFileResponse = (files: UploadedFile[], query: string): string => {
+    const hasImages = files.some(f => f.type.startsWith('image/'));
+    const hasDocuments = files.some(f => f.type.includes('text') || f.type.includes('document'));
+    const hasCode = files.some(f => f.name.includes('.js') || f.name.includes('.ts') || f.name.includes('.py') || f.name.includes('.css') || f.name.includes('.html'));
+
+    let response = "I've analyzed your uploaded files. Here's what I can help you with:\n\n";
+
+    if (hasImages) {
+      response += "📸 **Images**: I can help you with:\n";
+      response += "• Image analysis and description\n";
+      response += "• Identifying objects, text, or issues in images\n";
+      response += "• Suggesting improvements or modifications\n";
+      response += "• Converting formats or optimizing for web use\n\n";
+    }
+
+    if (hasDocuments) {
+      response += "📄 **Documents**: I can assist with:\n";
+      response += "• Reviewing and analyzing document content\n";
+      response += "• Suggesting improvements or edits\n";
+      response += "• Answering questions about the content\n";
+      response += "• Formatting and structure recommendations\n\n";
+    }
+
+    if (hasCode) {
+      response += "💻 **Code Files**: I can help with:\n";
+      response += "• Code review and optimization\n";
+      response += "• Bug identification and fixes\n";
+      response += "• Best practices and improvements\n";
+      response += "• Testing and documentation suggestions\n\n";
+    }
+
+    response += `**Files uploaded** (${files.length}):\n`;
+    files.forEach(file => {
+      response += `• ${file.name} (${formatFileSize(file.size)})\n`;
+    });
+
+    response += "\nWhat specific aspect would you like me to focus on?";
+    return response;
+  };
+
   const determineCategory = (query: string): Message['category'] => {
     const lowerQuery = query.toLowerCase();
     if (lowerQuery.includes('code') || lowerQuery.includes('programming')) return 'code';
@@ -85,7 +190,12 @@ const AgentChat = ({ agents }: AgentChatProps) => {
     return 'general';
   };
 
-  const generateResponse = (query: string, agent: any): string => {
+  const generateResponse = (query: string, agent: any, files?: UploadedFile[]): string => {
+    // If files are uploaded, prioritize file analysis
+    if (files && files.length > 0) {
+      return generateFileResponse(files, query);
+    }
+
     const category = determineCategory(query);
     const lowerQuery = query.toLowerCase();
 
@@ -164,24 +274,26 @@ Please let me know what specific issue you're facing, and I'll provide detailed 
   };
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() && uploadedFiles.length === 0) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
-      content: inputValue,
+      content: inputValue || 'Uploaded files for analysis',
       timestamp: new Date(),
-      category: determineCategory(inputValue)
+      category: determineCategory(inputValue),
+      files: uploadedFiles.length > 0 ? [...uploadedFiles] : undefined
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
+    setUploadedFiles([]); // Clear uploaded files after sending
     setIsLoading(true);
 
     // Simulate agent processing time
     setTimeout(() => {
-      const selectedAgent = getAgentForQuery(inputValue);
-      const response = generateResponse(inputValue, selectedAgent);
+      const selectedAgent = getAgentForQuery(inputValue || 'file analysis');
+      const response = generateResponse(inputValue || 'file analysis', selectedAgent, userMessage.files);
       
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -190,7 +302,7 @@ Please let me know what specific issue you're facing, and I'll provide detailed 
         timestamp: new Date(),
         agentId: selectedAgent.id,
         agentName: selectedAgent.name,
-        category: determineCategory(inputValue)
+        category: determineCategory(inputValue || 'general')
       };
 
       setMessages(prev => [...prev, agentMessage]);
@@ -203,6 +315,10 @@ Please let me know what specific issue you're facing, and I'll provide detailed 
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
   };
 
   useEffect(() => {
@@ -248,6 +364,28 @@ Please let me know what specific issue you're facing, and I'll provide detailed 
                       </div>
                     )}
                     <div className="whitespace-pre-wrap">{message.content}</div>
+                    
+                    {/* Display uploaded files */}
+                    {message.files && message.files.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        <div className="text-xs font-medium opacity-70">Uploaded files:</div>
+                        <div className="grid grid-cols-1 gap-2">
+                          {message.files.map((file) => (
+                            <div key={file.id} className="flex items-center gap-2 p-2 bg-background/50 rounded border">
+                              {getFileIcon(file.type)}
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-medium truncate">{file.name}</div>
+                                <div className="text-xs opacity-70">{formatFileSize(file.size)}</div>
+                              </div>
+                              {file.preview && (
+                                <img src={file.preview} alt={file.name} className="w-8 h-8 object-cover rounded" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className={`text-xs mt-2 ${
                       message.type === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                     }`}>
@@ -283,19 +421,65 @@ Please let me know what specific issue you're facing, and I'll provide detailed 
           </div>
         </ScrollArea>
         
+        {/* File Upload Preview */}
+        {uploadedFiles.length > 0 && (
+          <div className="border-t p-4 bg-muted/30">
+            <div className="text-sm font-medium mb-2">Files to upload:</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+              {uploadedFiles.map((file) => (
+                <div key={file.id} className="flex items-center gap-2 p-2 bg-background rounded border">
+                  {getFileIcon(file.type)}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium truncate">{file.name}</div>
+                    <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
+                  </div>
+                  {file.preview && (
+                    <img src={file.preview} alt={file.name} className="w-8 h-8 object-cover rounded" />
+                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeUploadedFile(file.id)}
+                    className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
         <div className="border-t p-4">
           <div className="flex gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.txt,.js,.ts,.py,.css,.html,.json,.xml"
+              className="hidden"
+            />
+            <Button
+              onClick={triggerFileUpload}
+              variant="outline"
+              size="icon"
+              disabled={isLoading}
+              className="shrink-0"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
             <Input
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask for help with technical issues, coding problems, or general questions..."
+              placeholder="Ask for help or upload files for analysis..."
               disabled={isLoading}
               className="flex-1"
             />
             <Button
               onClick={handleSendMessage}
-              disabled={!inputValue.trim() || isLoading}
+              disabled={(!inputValue.trim() && uploadedFiles.length === 0) || isLoading}
               size="icon"
             >
               {isLoading ? (
