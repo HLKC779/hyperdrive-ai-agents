@@ -8,8 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import authHero from "@/assets/auth-hero.jpg";
-import authOrb from "@/assets/auth-orb.jpg";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -115,58 +113,40 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden auth-hero-bg">
-      {/* Hero background image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-        style={{ backgroundImage: `url(${authHero})` }}
-      ></div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-background"></div>
       
-      {/* Magical floating orbs */}
-      <div className="floating-orb w-32 h-32 top-1/4 left-1/4 opacity-60"></div>
-      <div className="floating-orb w-24 h-24 top-3/4 right-1/3 opacity-40"></div>
-      <div className="floating-orb w-16 h-16 top-1/2 right-1/4 opacity-30"></div>
+      {/* Floating background elements */}
+      <div className="absolute top-20 left-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
       
-      {/* Magical particles */}
-      <div className="magic-particles top-1/3 left-1/2"></div>
-      <div className="magic-particles top-2/3 left-1/3"></div>
-      <div className="magic-particles top-1/4 right-1/3"></div>
-      <div className="magic-particles top-3/4 right-1/2"></div>
-      <div className="magic-particles top-1/2 left-1/5"></div>
-      
-      <Card className="auth-card-enhanced w-full max-w-md relative z-10 animate-scale-in">
-        <CardHeader className="text-center space-y-6">
-          <div className="mx-auto w-20 h-20 relative">
-            <div 
-              className="w-full h-full rounded-full bg-cover bg-center shadow-glow opacity-90"
-              style={{ backgroundImage: `url(${authOrb})` }}
-            ></div>
-            <div className="absolute inset-0 bg-gradient-primary rounded-full opacity-60 animate-pulse"></div>
-            <div className="absolute inset-2 bg-gradient-primary rounded-full opacity-40"></div>
+      <Card className="card-enhanced w-full max-w-md relative z-10 animate-scale-in">
+        <CardHeader className="text-center space-y-4">
+          <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center shadow-glow">
+            <div className="w-8 h-8 bg-primary-foreground rounded-full"></div>
           </div>
-          <div className="space-y-2">
-            <CardTitle className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in">
-              ✨ Welcome to the Future
-            </CardTitle>
-            <CardDescription className="text-muted-foreground text-lg font-medium">
-              Enter the magical realm of intelligent automation
-            </CardDescription>
-          </div>
+          <CardTitle className="text-3xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Welcome
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-lg">
+            Sign in to your account or create a new one
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 glass-effect p-1 rounded-xl">
+            <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-lg">
               <TabsTrigger 
                 value="signin" 
-                className="transition-all duration-500 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-glow data-[state=active]:scale-105"
+                className="transition-all duration-300 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-soft"
               >
-                🔮 Sign In
+                Sign In
               </TabsTrigger>
               <TabsTrigger 
                 value="signup"
-                className="transition-all duration-500 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-glow data-[state=active]:scale-105"
+                className="transition-all duration-300 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-soft"
               >
-                ✨ Sign Up
+                Sign Up
               </TabsTrigger>
             </TabsList>
             
@@ -202,17 +182,16 @@ const Auth = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="button-gradient w-full h-12 text-base font-medium rounded-xl relative overflow-hidden group" 
+                  className="button-gradient w-full h-12 text-base font-medium rounded-lg" 
                   disabled={loading}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                   {loading ? (
-                    <div className="flex items-center space-x-2 relative z-10">
+                    <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
-                      <span>✨ Entering the realm...</span>
+                      <span>Signing in...</span>
                     </div>
                   ) : (
-                    <span className="relative z-10">🔮 Enter the Magic</span>
+                    "Sign In"
                   )}
                 </Button>
               </form>
@@ -265,17 +244,16 @@ const Auth = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="button-gradient w-full h-12 text-base font-medium rounded-xl relative overflow-hidden group" 
+                  className="button-gradient w-full h-12 text-base font-medium rounded-lg" 
                   disabled={loading}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                   {loading ? (
-                    <div className="flex items-center space-x-2 relative z-10">
+                    <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
-                      <span>✨ Weaving your story...</span>
+                      <span>Creating account...</span>
                     </div>
                   ) : (
-                    <span className="relative z-10">🌟 Begin Your Journey</span>
+                    "Create Account"
                   )}
                 </Button>
               </form>
