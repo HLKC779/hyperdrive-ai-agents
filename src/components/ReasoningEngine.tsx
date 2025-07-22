@@ -54,6 +54,7 @@ const ReasoningEngine = () => {
   const [selectedProcess, setSelectedProcess] = useState<string | null>(null);
   const [isCreatingReasoning, setIsCreatingReasoning] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [processingActions, setProcessingActions] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
 
   const handleNewReasoning = async () => {
@@ -94,6 +95,46 @@ const ReasoningEngine = () => {
       });
     } finally {
       setIsResetting(false);
+    }
+  };
+
+  const handlePauseProcess = async (processId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent card click
+    setProcessingActions(prev => ({ ...prev, [processId]: true }));
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast({
+        title: "Process Paused",
+        description: `Reasoning process ${processId} has been paused successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Pause Failed",
+        description: "Failed to pause the reasoning process. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingActions(prev => ({ ...prev, [processId]: false }));
+    }
+  };
+
+  const handleResumeProcess = async (processId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent card click
+    setProcessingActions(prev => ({ ...prev, [processId]: true }));
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast({
+        title: "Process Resumed",
+        description: `Reasoning process ${processId} has been resumed successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Resume Failed",
+        description: "Failed to resume the reasoning process. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingActions(prev => ({ ...prev, [processId]: false }));
     }
   };
 
@@ -380,13 +421,23 @@ const ReasoningEngine = () => {
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
-                    <Button size="sm" variant="outline" disabled={process.status !== 'running'}>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      disabled={process.status !== 'running' || processingActions[process.id]}
+                      onClick={(e) => handlePauseProcess(process.id, e)}
+                    >
                       <Pause className="h-3 w-3 mr-1" />
-                      Pause
+                      {processingActions[process.id] ? 'Pausing...' : 'Pause'}
                     </Button>
-                    <Button size="sm" variant="outline" disabled={process.status === 'running'}>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      disabled={process.status === 'running' || processingActions[process.id]}
+                      onClick={(e) => handleResumeProcess(process.id, e)}
+                    >
                       <Play className="h-3 w-3 mr-1" />
-                      Resume
+                      {processingActions[process.id] ? 'Resuming...' : 'Resume'}
                     </Button>
                   </div>
                 </CardContent>
