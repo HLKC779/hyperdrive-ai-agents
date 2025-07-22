@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import KnowledgeGraphFlow from './KnowledgeGraphFlow';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -475,9 +476,7 @@ const ReasoningEngine = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-64 bg-muted/30 rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Knowledge graph visualization coming soon</p>
-              </div>
+              <KnowledgeGraphFlow />
             </CardContent>
           </Card>
         </TabsContent>
