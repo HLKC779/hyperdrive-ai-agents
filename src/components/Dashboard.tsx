@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,10 +25,19 @@ import {
   ArrowRight,
   Code,
   Search,
-  Globe
+  Globe,
+  LogOut,
+  LogIn
 } from 'lucide-react';
 
 const Dashboard = () => {
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
   const systemMetrics = {
     activeAgents: 12,
     totalTasks: 1247,
@@ -62,14 +72,29 @@ const Dashboard = () => {
             <p className="text-muted-foreground">Advanced Scalable Multi-Agent Platform</p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              System Config
-            </Button>
-            <Button size="sm">
-              <Zap className="h-4 w-4 mr-2" />
-              Deploy Agent
-            </Button>
+            {user ? (
+              <>
+                <Button variant="outline" size="sm">
+                  <Settings className="h-4 w-4 mr-2" />
+                  System Config
+                </Button>
+                <Button size="sm">
+                  <Zap className="h-4 w-4 mr-2" />
+                  Deploy Agent
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button size="sm">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 

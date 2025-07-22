@@ -14,6 +14,7 @@ import Monitoring from "./pages/Monitoring";
 import MultiModal from "./pages/MultiModal";
 import Security from "./pages/Security";
 import Copyright from "./pages/Copyright";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/multimodal" element={<MultiModal />} />
           <Route path="/security" element={<Security />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/copyright" element={<Copyright />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
