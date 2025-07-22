@@ -46,6 +46,8 @@ const MemorySystem = () => {
   const [selectedMemoryType, setSelectedMemoryType] = useState<string>('all');
   const [isSyncing, setIsSyncing] = useState(false);
   const [isCleaning, setIsCleaning] = useState(false);
+  const [isConsolidating, setIsConsolidating] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
   const { toast } = useToast();
 
   const handleSync = async () => {
@@ -85,6 +87,46 @@ const MemorySystem = () => {
       });
     } finally {
       setIsCleaning(false);
+    }
+  };
+
+  const handleConsolidation = async () => {
+    setIsConsolidating(true);
+    try {
+      // Simulate memory consolidation process
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      toast({
+        title: "Memory Consolidation Complete",
+        description: "Merged 1,847 similar memories and removed 324 duplicates.",
+      });
+    } catch (error) {
+      toast({
+        title: "Consolidation Failed",
+        description: "Failed to consolidate memories. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConsolidating(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    setIsArchiving(true);
+    try {
+      // Simulate archive process
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      toast({
+        title: "Archive Complete",
+        description: "Moved 12,394 old memories to long-term storage. Freed 45.7 MB.",
+      });
+    } catch (error) {
+      toast({
+        title: "Archive Failed",
+        description: "Failed to archive old memories. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsArchiving(false);
     }
   };
 
@@ -400,9 +442,13 @@ const MemorySystem = () => {
                       Merge similar memories and remove duplicates
                     </p>
                   </div>
-                  <Button variant="outline">
+                  <Button 
+                    variant="outline"
+                    onClick={handleConsolidation}
+                    disabled={isConsolidating}
+                  >
                     <Zap className="h-4 w-4 mr-2" />
-                    Run Now
+                    {isConsolidating ? 'Running...' : 'Run Now'}
                   </Button>
                 </div>
                 <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -412,9 +458,13 @@ const MemorySystem = () => {
                       Move unused memories to long-term storage
                     </p>
                   </div>
-                  <Button variant="outline">
+                  <Button 
+                    variant="outline"
+                    onClick={handleArchive}
+                    disabled={isArchiving}
+                  >
                     <HardDrive className="h-4 w-4 mr-2" />
-                    Archive
+                    {isArchiving ? 'Archiving...' : 'Archive'}
                   </Button>
                 </div>
               </div>
