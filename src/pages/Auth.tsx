@@ -53,9 +53,13 @@ const Auth = () => {
       });
 
       if (error) {
+        let errorMessage = error.message;
+        if (error.message.includes("already registered") || error.message.includes("already been registered")) {
+          errorMessage = "This email is already registered. Please try signing in instead.";
+        }
         toast({
           title: "Sign up failed",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
       } else {
