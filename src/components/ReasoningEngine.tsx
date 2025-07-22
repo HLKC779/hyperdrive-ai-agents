@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,50 @@ interface DecisionNode {
 
 const ReasoningEngine = () => {
   const [selectedProcess, setSelectedProcess] = useState<string | null>(null);
+  const [isCreatingReasoning, setIsCreatingReasoning] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const { toast } = useToast();
+
+  const handleNewReasoning = async () => {
+    setIsCreatingReasoning(true);
+    try {
+      // Simulate creating a new reasoning process
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      toast({
+        title: "New Reasoning Process Created",
+        description: "Started 'Customer Behavior Analysis' with neural reasoning type.",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to Create Reasoning",
+        description: "Unable to start new reasoning process. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingReasoning(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setIsResetting(true);
+    try {
+      // Simulate reset process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setSelectedProcess(null);
+      toast({
+        title: "Reasoning Engine Reset",
+        description: "All processes paused and system state cleared successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Reset Failed",
+        description: "Failed to reset reasoning engine. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   const reasoningProcesses: ReasoningProcess[] = [
     {
@@ -242,13 +287,23 @@ const ReasoningEngine = () => {
           <p className="text-muted-foreground">Advanced reasoning and decision making</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleNewReasoning}
+            disabled={isCreatingReasoning}
+          >
             <TreePine className="h-4 w-4 mr-2" />
-            New Reasoning
+            {isCreatingReasoning ? 'Creating...' : 'New Reasoning'}
           </Button>
-          <Button variant="outline" size="sm">
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Reset
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleReset}
+            disabled={isResetting}
+          >
+            <RotateCcw className={`h-4 w-4 mr-2 ${isResetting ? 'animate-spin' : ''}`} />
+            {isResetting ? 'Resetting...' : 'Reset'}
           </Button>
         </div>
       </div>
