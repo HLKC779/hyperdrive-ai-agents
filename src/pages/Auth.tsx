@@ -113,25 +113,49 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Welcome</CardTitle>
-          <CardDescription className="text-center">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-background"></div>
+      
+      {/* Floating background elements */}
+      <div className="absolute top-20 left-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
+      
+      <Card className="card-enhanced w-full max-w-md relative z-10 animate-scale-in">
+        <CardHeader className="text-center space-y-4">
+          <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center shadow-glow">
+            <div className="w-8 h-8 bg-primary-foreground rounded-full"></div>
+          </div>
+          <CardTitle className="text-3xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Welcome
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-lg">
             Sign in to your account or create a new one
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="signin">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+        <CardContent className="space-y-6">
+          <Tabs defaultValue="signin" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-lg">
+              <TabsTrigger 
+                value="signin" 
+                className="transition-all duration-300 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-soft"
+              >
+                Sign In
+              </TabsTrigger>
+              <TabsTrigger 
+                value="signup"
+                className="transition-all duration-300 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-soft"
+              >
+                Sign Up
+              </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="signin" className="space-y-4">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+            <TabsContent value="signin" className="space-y-6 mt-6">
+              <form onSubmit={handleSignIn} className="space-y-5">
+                <div className="space-y-3">
+                  <Label htmlFor="signin-email" className="text-sm font-medium text-foreground">
+                    Email Address
+                  </Label>
                   <Input
                     id="signin-email"
                     type="email"
@@ -139,10 +163,13 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="Enter your email"
+                    className="input-enhanced h-12 text-base"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="signin-password" className="text-sm font-medium text-foreground">
+                    Password
+                  </Label>
                   <Input
                     id="signin-password"
                     type="password"
@@ -150,18 +177,32 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="Enter your password"
+                    className="input-enhanced h-12 text-base"
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Signing in..." : "Sign In"}
+                <Button 
+                  type="submit" 
+                  className="button-gradient w-full h-12 text-base font-medium rounded-lg" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    "Sign In"
+                  )}
                 </Button>
               </form>
             </TabsContent>
             
-            <TabsContent value="signup" className="space-y-4">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Display Name</Label>
+            <TabsContent value="signup" className="space-y-6 mt-6">
+              <form onSubmit={handleSignUp} className="space-y-5">
+                <div className="space-y-3">
+                  <Label htmlFor="signup-name" className="text-sm font-medium text-foreground">
+                    Display Name
+                  </Label>
                   <Input
                     id="signup-name"
                     type="text"
@@ -169,10 +210,13 @@ const Auth = () => {
                     onChange={(e) => setDisplayName(e.target.value)}
                     required
                     placeholder="Enter your display name"
+                    className="input-enhanced h-12 text-base"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="signup-email" className="text-sm font-medium text-foreground">
+                    Email Address
+                  </Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -180,22 +224,37 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="Enter your email"
+                    className="input-enhanced h-12 text-base"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="signup-password" className="text-sm font-medium text-foreground">
+                    Password
+                  </Label>
                   <Input
                     id="signup-password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    placeholder="Create a password"
+                    placeholder="Create a password (min. 6 characters)"
                     minLength={6}
+                    className="input-enhanced h-12 text-base"
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Creating account..." : "Create Account"}
+                <Button 
+                  type="submit" 
+                  className="button-gradient w-full h-12 text-base font-medium rounded-lg" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                      <span>Creating account...</span>
+                    </div>
+                  ) : (
+                    "Create Account"
+                  )}
                 </Button>
               </form>
             </TabsContent>
