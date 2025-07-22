@@ -71,6 +71,7 @@ const AgentChat = ({ agents }: AgentChatProps) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [conversationContext, setConversationContext] = useState<string[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -210,7 +211,7 @@ const AgentChat = ({ agents }: AgentChatProps) => {
     return 'general';
   };
 
-  const generateResponse = (query: string, agent: any, files?: UploadedFile[]): string => {
+  const generateResponse = (query: string, agent: any, files?: UploadedFile[], context?: string[]): string => {
     // If files are uploaded, prioritize file analysis
     if (files && files.length > 0) {
       return generateFileResponse(files, query);
@@ -218,144 +219,158 @@ const AgentChat = ({ agents }: AgentChatProps) => {
 
     const category = determineCategory(query);
     const lowerQuery = query.toLowerCase();
+    const recentContext = context?.slice(-3) || []; // Last 3 user messages for context
 
-    // Check for specific keywords and provide varied responses
+    // Check if user is asking for follow-up or clarification
+    if (lowerQuery.includes('what about') || lowerQuery.includes('how about') || lowerQuery.includes('tell me more')) {
+      if (recentContext.some(msg => msg.includes('performance') || msg.includes('optimization'))) {
+        return `Let me dive deeper into performance optimization techniques:
+
+**Frontend Performance:**
+• Use React.memo() for components that don't need frequent re-renders
+• Implement virtual scrolling for large lists
+• Optimize bundle size with tree shaking and code splitting
+• Minimize CSS and use CSS-in-JS efficiently
+
+**Backend Performance:**
+• Database indexing and query optimization
+• Implement caching layers (Redis, CDN)
+• Use compression for API responses
+• Monitor and profile server performance
+
+**Monitoring Tools:**
+• Lighthouse for web performance audits
+• React DevTools Profiler
+• Chrome DevTools Performance tab
+• Real User Monitoring (RUM) tools
+
+What specific performance area interests you most?`;
+      }
+    }
+
+    // Context-aware responses for repeated topics
+    if (recentContext.length > 0) {
+      const hasRepeatedTopic = recentContext.some(msg => 
+        (msg.includes('help') && lowerQuery.includes('help')) ||
+        (msg.includes('best practices') && lowerQuery.includes('best practices'))
+      );
+      
+      if (hasRepeatedTopic) {
+        return `I notice we've been discussing this topic. Let me provide a different perspective or more specific guidance:
+
+**Since you're looking for continued assistance**, here are some next steps:
+• Share your specific project details for targeted advice
+• Upload relevant files or screenshots for analysis  
+• Ask about particular challenges you're facing
+• Request examples or code snippets for implementation
+
+**Alternative approaches I can help with:**
+• Step-by-step tutorials and walkthroughs
+• Troubleshooting specific error messages
+• Code reviews and optimization suggestions
+• Architecture and design pattern recommendations
+
+What specific aspect would you like to explore further?`;
+      }
+    }
+
+    // Enhanced keyword responses
+    if (lowerQuery.includes('optimize') || lowerQuery.includes('images') || lowerQuery.includes('assets')) {
+      return `Let me help you optimize images and assets! Here's a comprehensive approach:
+
+**Image Optimization:**
+• **Format selection**: Use WebP for photos, SVG for icons, PNG for transparency
+• **Compression**: Tools like TinyPNG, ImageOptim, or Squoosh
+• **Responsive images**: Use srcset and sizes attributes
+• **Lazy loading**: Implement intersection observer or native loading="lazy"
+
+**Asset Optimization:**
+• **CSS**: Minify, remove unused styles, use critical CSS
+• **JavaScript**: Bundle splitting, tree shaking, minification
+• **Fonts**: Use font-display: swap, preload critical fonts
+• **CDN**: Distribute assets globally for faster loading
+
+**Implementation tools:**
+• Webpack optimization plugins
+• Vite build optimizations  
+• Next.js automatic optimizations
+• Cloudinary or similar image services
+
+What type of assets are you primarily working with?`;
+    }
+
+    // Dynamic help responses based on context
     if (lowerQuery.includes('help') || lowerQuery.includes('assist')) {
-      const helpResponses = [
-        `I'm ready to help you! What specific challenge are you facing today? I can assist with technical issues, code problems, research questions, or general guidance.`,
-        `How can I assist you? Whether it's debugging code, solving technical problems, or providing recommendations - I'm here to help!`,
-        `I'm here to support you! Tell me more about what you're working on and I'll provide targeted assistance.`
+      const helpVariations = [
+        `I'm here to help! Based on our conversation, I can provide targeted assistance. What specific challenge are you facing right now?`,
+        `How can I support you today? Whether it's debugging, optimization, research, or implementation - I'm ready to dive in!`,
+        `Let's solve this together! Tell me about the specific issue or project you're working on, and I'll provide detailed guidance.`,
+        `I'm ready to assist! Share more details about what you're trying to accomplish, and I'll help you find the best approach.`
       ];
-      return helpResponses[Math.floor(Math.random() * helpResponses.length)];
+      return helpVariations[Math.floor(Math.random() * helpVariations.length)];
     }
 
-    if (lowerQuery.includes('best practices') || lowerQuery.includes('recommendations')) {
-      return `Here are some general best practices I recommend:
-
-**Development:**
-• Follow consistent coding standards and naming conventions
-• Implement proper error handling and logging
-• Write tests for critical functionality
-• Use version control with meaningful commit messages
-
-**Performance:**
-• Optimize images and assets
-• Implement lazy loading where appropriate
-• Monitor and profile performance regularly
-• Use caching strategies effectively
-
-**Security:**
-• Validate all user inputs
-• Use HTTPS and secure authentication
-• Keep dependencies updated
-• Follow the principle of least privilege
-
-What specific area would you like me to dive deeper into?`;
-    }
-
-    // Technical support responses
+    // Enhanced category-specific responses
     if (category === 'technical') {
       if (lowerQuery.includes('error') || lowerQuery.includes('bug') || lowerQuery.includes('issue')) {
-        return `Let me help you troubleshoot that issue. To provide the best assistance, please share:
+        return `Let me help you debug this issue systematically:
 
-1. **Error details** - What specific error message are you seeing?
-2. **Context** - When does this happen? (on page load, user interaction, etc.)
-3. **Browser console** - Any JavaScript errors or warnings?
-4. **Steps to reproduce** - How can I recreate the issue?
+**Debugging Process:**
+1. **Identify the error**: What exactly is happening vs. what you expect?
+2. **Reproduce consistently**: Can you make it happen again?
+3. **Check the basics**: Console errors, network requests, component state
+4. **Isolate the problem**: Test individual components or functions
 
-Common solutions I can help with:
-• Debugging JavaScript/React errors
-• Fixing CSS layout issues
-• Resolving API integration problems
-• Performance optimization`;
-      }
-      
-      if (lowerQuery.includes('performance') || lowerQuery.includes('slow') || lowerQuery.includes('optimization')) {
-        return `Performance optimization is crucial! Let me help you identify bottlenecks:
+**Common debugging tools:**
+• Browser DevTools (Console, Network, Elements tabs)
+• React DevTools for component inspection
+• Debugger statements and breakpoints
+• Console.log strategically placed
 
-**Quick wins:**
-• Compress and optimize images
-• Minimize JavaScript bundles
-• Enable browser caching
-• Use a CDN for static assets
+**Next steps:**
+• Share the specific error message
+• Describe when it occurs
+• Show relevant code snippets
 
-**Advanced optimizations:**
-• Implement code splitting
-• Use React.memo() for expensive components
-• Optimize database queries
-• Add performance monitoring
-
-What specific performance issues are you experiencing?`;
+What error are you encountering?`;
       }
     }
 
-    // Code-related responses
     if (category === 'code') {
       if (lowerQuery.includes('react') || lowerQuery.includes('component')) {
-        return `I'd be happy to help with React development! Here's how I can assist:
+        return `React development expertise at your service! Let me help you build better components:
 
-**Component best practices:**
-• Keep components small and focused
-• Use proper prop types or TypeScript
-• Implement proper state management
-• Follow React hooks rules
+**Modern React Patterns:**
+• Functional components with hooks
+• Custom hooks for reusable logic
+• Context for state management
+• Error boundaries for graceful failures
 
-**Common patterns I can help with:**
-• Custom hooks creation
-• Context API usage
-• Performance optimization
-• Testing strategies
+**Performance Best Practices:**
+• Use React.memo() wisely
+• Optimize re-renders with useCallback/useMemo
+• Lazy load components with React.lazy()
+• Implement proper key props for lists
 
-What specific React challenge are you working on?`;
-      }
-      
-      if (lowerQuery.includes('api') || lowerQuery.includes('fetch') || lowerQuery.includes('backend')) {
-        return `API integration support! I can help you with:
+**Development Workflow:**
+• TypeScript for type safety
+• ESLint and Prettier for code quality
+• React Testing Library for testing
+• Storybook for component development
 
-**Frontend API calls:**
-• Setting up fetch requests with proper error handling
-• Managing loading states and user feedback
-• Implementing authentication flows
-• Data validation and transformation
-
-**Backend considerations:**
-• RESTful API design principles
-• Database query optimization
-• Caching strategies
-• Security best practices
-
-What type of API integration are you working on?`;
+What React challenge can I help you tackle?`;
       }
     }
 
-    // Research responses
-    if (category === 'research') {
-      return `I can help you research and find information! My capabilities include:
-
-**Technical research:**
-• Finding documentation and tutorials
-• Comparing different solutions and technologies
-• Identifying best practices and patterns
-• Troubleshooting guides and solutions
-
-**Areas I can research:**
-• JavaScript frameworks and libraries
-• Development tools and workflows
-• Performance optimization techniques
-• Security implementation guides
-
-What specific topic would you like me to research for you?`;
-    }
-
-    // Default varied responses based on agent type
-    const responses = [
-      `Hello! I'm ${agent.name}, and I'm here to help you succeed. What specific challenge can I assist you with today?`,
-      `Hi there! As ${agent.name}, I specialize in ${agent.capabilities.slice(0, 2).join(' and ').toLowerCase()}. What would you like to work on?`,
-      `Great to meet you! I'm ${agent.name} and I'm ready to help. Whether you need technical guidance, code assistance, or problem-solving support - just let me know what you're working on!`,
-      `Welcome! I'm ${agent.name}, your dedicated assistant. I can help with technical issues, development questions, research, and much more. What brings you here today?`
+    // Default responses with more variety
+    const dynamicResponses = [
+      `Hi! I'm ${agent.name}, your technical assistant. I'm here to help you solve problems and build better solutions. What are you working on?`,
+      `Hello there! ${agent.name} here, ready to assist with ${agent.capabilities.slice(0, 2).join(', ').toLowerCase()}, and more. What can we tackle together?`,
+      `Welcome! I'm ${agent.name} and I specialize in helping developers succeed. Whether you need debugging help, optimization tips, or implementation guidance - I'm here for you!`,
+      `Great to connect! As ${agent.name}, I can help you with technical challenges, code reviews, research, and problem-solving. What's on your mind today?`
     ];
 
-    return responses[Math.floor(Math.random() * responses.length)];
+    return dynamicResponses[Math.floor(Math.random() * dynamicResponses.length)];
   };
 
   const handleSendMessage = async () => {
@@ -371,6 +386,7 @@ What specific topic would you like me to research for you?`;
     };
 
     setMessages(prev => [...prev, userMessage]);
+    setConversationContext(prev => [...prev, inputValue || 'file upload'].slice(-5)); // Keep last 5 messages
     setInputValue('');
     setUploadedFiles([]); // Clear uploaded files after sending
     setIsLoading(true);
@@ -378,7 +394,12 @@ What specific topic would you like me to research for you?`;
     // Simulate agent processing time
     setTimeout(() => {
       const selectedAgent = getAgentForQuery(inputValue || 'file analysis');
-      const response = generateResponse(inputValue || 'file analysis', selectedAgent, userMessage.files);
+      const response = generateResponse(
+        inputValue || 'file analysis', 
+        selectedAgent, 
+        userMessage.files,
+        conversationContext
+      );
       
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -394,10 +415,10 @@ What specific topic would you like me to research for you?`;
       setIsLoading(false);
       
       // Auto-speak agent responses (optional - you can remove this if not wanted)
-      if (response.length < 500) { // Only speak shorter responses
+      if (response.length < 300) { // Only speak shorter responses
         speakText(response);
       }
-    }, 1500);
+    }, 1200); // Slightly faster response time
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
