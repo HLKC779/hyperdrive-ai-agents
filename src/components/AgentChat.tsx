@@ -219,78 +219,143 @@ const AgentChat = ({ agents }: AgentChatProps) => {
     const category = determineCategory(query);
     const lowerQuery = query.toLowerCase();
 
+    // Check for specific keywords and provide varied responses
+    if (lowerQuery.includes('help') || lowerQuery.includes('assist')) {
+      const helpResponses = [
+        `I'm ready to help you! What specific challenge are you facing today? I can assist with technical issues, code problems, research questions, or general guidance.`,
+        `How can I assist you? Whether it's debugging code, solving technical problems, or providing recommendations - I'm here to help!`,
+        `I'm here to support you! Tell me more about what you're working on and I'll provide targeted assistance.`
+      ];
+      return helpResponses[Math.floor(Math.random() * helpResponses.length)];
+    }
+
+    if (lowerQuery.includes('best practices') || lowerQuery.includes('recommendations')) {
+      return `Here are some general best practices I recommend:
+
+**Development:**
+• Follow consistent coding standards and naming conventions
+• Implement proper error handling and logging
+• Write tests for critical functionality
+• Use version control with meaningful commit messages
+
+**Performance:**
+• Optimize images and assets
+• Implement lazy loading where appropriate
+• Monitor and profile performance regularly
+• Use caching strategies effectively
+
+**Security:**
+• Validate all user inputs
+• Use HTTPS and secure authentication
+• Keep dependencies updated
+• Follow the principle of least privilege
+
+What specific area would you like me to dive deeper into?`;
+    }
+
     // Technical support responses
     if (category === 'technical') {
-      if (lowerQuery.includes('error') || lowerQuery.includes('bug')) {
-        return `I can help you troubleshoot that issue. Based on my analysis, here are some common solutions:
+      if (lowerQuery.includes('error') || lowerQuery.includes('bug') || lowerQuery.includes('issue')) {
+        return `Let me help you troubleshoot that issue. To provide the best assistance, please share:
 
-1. **Check the console** - Look for any error messages in the browser console (F12)
-2. **Verify dependencies** - Ensure all required packages are installed and up to date
-3. **Clear cache** - Try clearing your browser cache or restarting your development server
-4. **Check network requests** - Verify that API calls are working correctly
+1. **Error details** - What specific error message are you seeing?
+2. **Context** - When does this happen? (on page load, user interaction, etc.)
+3. **Browser console** - Any JavaScript errors or warnings?
+4. **Steps to reproduce** - How can I recreate the issue?
 
-Could you provide more details about the specific error message you're seeing?`;
+Common solutions I can help with:
+• Debugging JavaScript/React errors
+• Fixing CSS layout issues
+• Resolving API integration problems
+• Performance optimization`;
       }
       
-      if (lowerQuery.includes('performance') || lowerQuery.includes('slow')) {
-        return `Performance issues can have several causes. Let me help you optimize:
+      if (lowerQuery.includes('performance') || lowerQuery.includes('slow') || lowerQuery.includes('optimization')) {
+        return `Performance optimization is crucial! Let me help you identify bottlenecks:
 
-1. **Bundle size** - Check if your JavaScript bundles are too large
-2. **Image optimization** - Ensure images are properly compressed and sized
-3. **Code splitting** - Implement lazy loading for better performance
-4. **Caching** - Verify proper caching strategies are in place
+**Quick wins:**
+• Compress and optimize images
+• Minimize JavaScript bundles
+• Enable browser caching
+• Use a CDN for static assets
 
-Would you like me to analyze any specific performance metrics?`;
+**Advanced optimizations:**
+• Implement code splitting
+• Use React.memo() for expensive components
+• Optimize database queries
+• Add performance monitoring
+
+What specific performance issues are you experiencing?`;
       }
     }
 
     // Code-related responses
     if (category === 'code') {
       if (lowerQuery.includes('react') || lowerQuery.includes('component')) {
-        return `I can help you with React development! Here are some best practices:
+        return `I'd be happy to help with React development! Here's how I can assist:
 
-1. **Component structure** - Keep components small and focused
-2. **State management** - Use appropriate state management (useState, useReducer, context)
-3. **Performance** - Implement useMemo and useCallback when needed
-4. **Testing** - Write tests for your components
+**Component best practices:**
+• Keep components small and focused
+• Use proper prop types or TypeScript
+• Implement proper state management
+• Follow React hooks rules
 
-What specific React issue are you working on?`;
+**Common patterns I can help with:**
+• Custom hooks creation
+• Context API usage
+• Performance optimization
+• Testing strategies
+
+What specific React challenge are you working on?`;
       }
       
-      if (lowerQuery.includes('api') || lowerQuery.includes('fetch')) {
-        return `For API integration, I recommend:
+      if (lowerQuery.includes('api') || lowerQuery.includes('fetch') || lowerQuery.includes('backend')) {
+        return `API integration support! I can help you with:
 
-1. **Error handling** - Always implement proper try-catch blocks
-2. **Loading states** - Show loading indicators during API calls
-3. **Type safety** - Use TypeScript interfaces for API responses
-4. **Caching** - Consider using React Query or SWR for better data management
+**Frontend API calls:**
+• Setting up fetch requests with proper error handling
+• Managing loading states and user feedback
+• Implementing authentication flows
+• Data validation and transformation
 
-What type of API are you working with?`;
+**Backend considerations:**
+• RESTful API design principles
+• Database query optimization
+• Caching strategies
+• Security best practices
+
+What type of API integration are you working on?`;
       }
     }
 
     // Research responses
     if (category === 'research') {
-      return `I can help you research that topic. Based on my capabilities, I can:
+      return `I can help you research and find information! My capabilities include:
 
-1. **Search documentation** - Find relevant technical documentation
-2. **Best practices** - Provide industry-standard approaches
-3. **Code examples** - Show practical implementation examples
-4. **Troubleshooting guides** - Help you find solutions to common problems
+**Technical research:**
+• Finding documentation and tutorials
+• Comparing different solutions and technologies
+• Identifying best practices and patterns
+• Troubleshooting guides and solutions
 
-What specific information are you looking for?`;
+**Areas I can research:**
+• JavaScript frameworks and libraries
+• Development tools and workflows
+• Performance optimization techniques
+• Security implementation guides
+
+What specific topic would you like me to research for you?`;
     }
 
-    // General responses
-    return `I'm here to help! As ${agent.name}, I specialize in ${agent.capabilities.join(', ').toLowerCase()}. 
+    // Default varied responses based on agent type
+    const responses = [
+      `Hello! I'm ${agent.name}, and I'm here to help you succeed. What specific challenge can I assist you with today?`,
+      `Hi there! As ${agent.name}, I specialize in ${agent.capabilities.slice(0, 2).join(' and ').toLowerCase()}. What would you like to work on?`,
+      `Great to meet you! I'm ${agent.name} and I'm ready to help. Whether you need technical guidance, code assistance, or problem-solving support - just let me know what you're working on!`,
+      `Welcome! I'm ${agent.name}, your dedicated assistant. I can help with technical issues, development questions, research, and much more. What brings you here today?`
+    ];
 
-I can assist you with:
-• Technical troubleshooting
-• Code review and optimization
-• Research and documentation
-• Best practices and recommendations
-
-Please let me know what specific issue you're facing, and I'll provide detailed assistance.`;
+    return responses[Math.floor(Math.random() * responses.length)];
   };
 
   const handleSendMessage = async () => {
