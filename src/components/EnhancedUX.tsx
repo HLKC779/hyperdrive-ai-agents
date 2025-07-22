@@ -273,10 +273,10 @@ const EnhancedUX = () => {
     
     const matchesDateFrom = !filters.dateFrom || task.createdDate >= new Date(filters.dateFrom);
     const matchesDateTo = !filters.dateTo || task.createdDate <= new Date(filters.dateTo);
-    const matchesAgent = !filters.agent || task.assignedAgent.includes(filters.agent);
-    const matchesPriority = !filters.priority || task.priority === filters.priority;
-    const matchesType = !filters.type || task.type === filters.type;
-    const matchesStatus = !filters.status || task.status === filters.status;
+    const matchesAgent = !filters.agent || filters.agent === 'all-agents' || task.assignedAgent.includes(filters.agent);
+    const matchesPriority = !filters.priority || filters.priority === 'all-priorities' || task.priority === filters.priority;
+    const matchesType = !filters.type || filters.type === 'all-types' || task.type === filters.type;
+    const matchesStatus = !filters.status || filters.status === 'all-statuses' || task.status === filters.status;
 
     return matchesSearch && matchesDateFrom && matchesDateTo && 
            matchesAgent && matchesPriority && matchesType && matchesStatus;
@@ -576,7 +576,7 @@ const EnhancedUX = () => {
                       <SelectValue placeholder="All agents" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All agents</SelectItem>
+                      <SelectItem value="all-agents">All agents</SelectItem>
                       {uniqueAgents.map(agent => (
                         <SelectItem key={agent} value={agent}>{agent}</SelectItem>
                       ))}
@@ -590,7 +590,7 @@ const EnhancedUX = () => {
                       <SelectValue placeholder="All priorities" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All priorities</SelectItem>
+                      <SelectItem value="all-priorities">All priorities</SelectItem>
                       <SelectItem value="critical">Critical</SelectItem>
                       <SelectItem value="high">High</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
@@ -605,7 +605,7 @@ const EnhancedUX = () => {
                       <SelectValue placeholder="All types" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All types</SelectItem>
+                      <SelectItem value="all-types">All types</SelectItem>
                       <SelectItem value="workflow">Workflow</SelectItem>
                       <SelectItem value="computation">Computation</SelectItem>
                       <SelectItem value="api">API Task</SelectItem>
@@ -621,7 +621,7 @@ const EnhancedUX = () => {
                       <SelectValue placeholder="All statuses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All statuses</SelectItem>
+                      <SelectItem value="all-statuses">All statuses</SelectItem>
                       <SelectItem value="running">Running</SelectItem>
                       <SelectItem value="queued">Queued</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
