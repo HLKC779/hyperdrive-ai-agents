@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { useVoiceChat } from '@/hooks/useVoiceChat';
 import { 
   Send, 
   Bot, 
@@ -18,7 +19,11 @@ import {
   Image as ImageIcon,
   FileText,
   File,
-  X
+  X,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 
 interface UploadedFile {
@@ -56,7 +61,7 @@ const AgentChat = ({ agents }: AgentChatProps) => {
     {
       id: '1',
       type: 'agent',
-      content: 'Hello! I\'m your AI assistant. I can help you with technical problems, code issues, research, and general questions. You can also upload files for me to analyze. What can I help you with today?',
+      content: 'Hello! I\'m your AI assistant. I can help you with technical problems, code issues, research, and general questions. You can also upload files for me to analyze or use voice commands. What can I help you with today?',
       timestamp: new Date(),
       agentId: 'agent-001',
       agentName: 'Support Agent',
@@ -68,6 +73,21 @@ const AgentChat = ({ agents }: AgentChatProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Voice chat functionality
+  const {
+    isRecording,
+    isProcessing,
+    isPlaying,
+    startRecording,
+    stopRecording,
+    speakText,
+    stopPlaying,
+  } = useVoiceChat({
+    onTranscriptionComplete: (text) => {
+      setInputValue(text);
+    }
+  });
 
   const getAgentForQuery = (query: string): any => {
     const lowerQuery = query.toLowerCase();
@@ -307,6 +327,11 @@ Please let me know what specific issue you're facing, and I'll provide detailed 
 
       setMessages(prev => [...prev, agentMessage]);
       setIsLoading(false);
+      
+      // Auto-speak agent responses (optional - you can remove this if not wanted)
+      if (response.length < 500) { // Only speak shorter responses
+        speakText(response);
+      }
     }, 1500);
   };
 
@@ -364,6 +389,33 @@ Please let me know what specific issue you're facing, and I'll provide detailed 
                       </div>
                     )}
                     <div className="whitespace-pre-wrap">{message.content}</div>
+                    
+                    {/* Voice controls for agent messages */}
+                    {message.type === 'agent' && (
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => speakText(message.content)}
+                          disabled={isPlaying}
+                          className="h-6 px-2 text-xs"
+                        >
+                          <Volume2 className="h-3 w-3 mr-1" />
+                          {isPlaying ? 'Playing...' : 'Speak'}
+                        </Button>
+                        {isPlaying && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={stopPlaying}
+                            className="h-6 px-2 text-xs"
+                          >
+                            <VolumeX className="h-3 w-3 mr-1" />
+                            Stop
+                          </Button>
+                        )}
+                      </div>
+                    )}
                     
                     {/* Display uploaded files */}
                     {message.files && message.files.length > 0 && (
@@ -469,17 +521,35 @@ Please let me know what specific issue you're facing, and I'll provide detailed 
             >
               <Paperclip className="h-4 w-4" />
             </Button>
+            
+            {/* Voice recording button */}
+            <Button
+              size="icon"
+              variant={isRecording ? "destructive" : "outline"}
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isProcessing || isLoading}
+              className="shrink-0"
+            >
+              {isProcessing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isRecording ? (
+                <MicOff className="h-4 w-4" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+            </Button>
+            
             <Input
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask for help or upload files for analysis..."
-              disabled={isLoading}
+              placeholder={isRecording ? "Recording..." : isProcessing ? "Processing speech..." : "Ask for help, upload files, or use voice..."}
+              disabled={isLoading || isRecording || isProcessing}
               className="flex-1"
             />
             <Button
               onClick={handleSendMessage}
-              disabled={(!inputValue.trim() && uploadedFiles.length === 0) || isLoading}
+              disabled={(!inputValue.trim() && uploadedFiles.length === 0) || isLoading || isRecording || isProcessing}
               size="icon"
             >
               {isLoading ? (
@@ -489,6 +559,30 @@ Please let me know what specific issue you're facing, and I'll provide detailed 
               )}
             </Button>
           </div>
+          
+          {/* Voice status indicator */}
+          {(isRecording || isProcessing || isPlaying) && (
+            <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
+              {isRecording && (
+                <>
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  Recording... Click the microphone again to stop
+                </>
+              )}
+              {isProcessing && (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Converting speech to text...
+                </>
+              )}
+              {isPlaying && (
+                <>
+                  <Volume2 className="h-3 w-3" />
+                  Playing audio response...
+                </>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
