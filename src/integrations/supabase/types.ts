@@ -118,6 +118,101 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string
+          document_id: string
+          embedding: string | null
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          created_at?: string
+          document_id: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          document_id?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_documents: {
+        Row: {
+          author: string | null
+          category: string
+          confidence_score: number | null
+          content: string
+          created_at: string
+          created_by: string | null
+          difficulty_level: string | null
+          document_type: string
+          embedding: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          source_url: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          category?: string
+          confidence_score?: number | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          difficulty_level?: string | null
+          document_type?: string
+          embedding?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          source_url?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          category?: string
+          confidence_score?: number | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          difficulty_level?: string | null
+          document_type?: string
+          embedding?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          source_url?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -142,6 +237,165 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      rl_agent_metrics: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          metric_type: string
+          metric_value: number
+          session_id: string | null
+          timestamp: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          metric_value: number
+          session_id?: string | null
+          timestamp?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          metric_value?: number
+          session_id?: string | null
+          timestamp?: string
+        }
+        Relationships: []
+      }
+      rl_feedback: {
+        Row: {
+          agent_id: string
+          context: Json | null
+          created_at: string
+          feedback_type: string
+          feedback_value: Json
+          id: string
+          processed: boolean | null
+          session_id: string
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          context?: Json | null
+          created_at?: string
+          feedback_type: string
+          feedback_value: Json
+          id?: string
+          processed?: boolean | null
+          session_id: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          context?: Json | null
+          created_at?: string
+          feedback_type?: string
+          feedback_value?: Json
+          id?: string
+          processed?: boolean | null
+          session_id?: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      rl_system_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          interaction_data: Json
+          interaction_type: string
+          outcome: Json | null
+          session_id: string | null
+          system_state: Json | null
+          target_element: string | null
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction_data: Json
+          interaction_type: string
+          outcome?: Json | null
+          session_id?: string | null
+          system_state?: Json | null
+          target_element?: string | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction_data?: Json
+          interaction_type?: string
+          outcome?: Json | null
+          session_id?: string | null
+          system_state?: Json | null
+          target_element?: string | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      rl_training_sessions: {
+        Row: {
+          agent_ids: string[]
+          configuration: Json | null
+          convergence_achieved: boolean | null
+          created_at: string
+          end_time: string | null
+          environment_id: string
+          id: string
+          session_name: string
+          start_time: string
+          status: string
+          total_episodes: number | null
+          total_rewards: number | null
+          updated_at: string
+        }
+        Insert: {
+          agent_ids: string[]
+          configuration?: Json | null
+          convergence_achieved?: boolean | null
+          created_at?: string
+          end_time?: string | null
+          environment_id: string
+          id?: string
+          session_name: string
+          start_time?: string
+          status?: string
+          total_episodes?: number | null
+          total_rewards?: number | null
+          updated_at?: string
+        }
+        Update: {
+          agent_ids?: string[]
+          configuration?: Json | null
+          convergence_achieved?: boolean | null
+          created_at?: string
+          end_time?: string | null
+          environment_id?: string
+          id?: string
+          session_name?: string
+          start_time?: string
+          status?: string
+          total_episodes?: number | null
+          total_rewards?: number | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -221,6 +475,44 @@ export type Database = {
           similarity: number
           document_title: string
           document_created_at: string
+        }[]
+      }
+      search_knowledge: {
+        Args: {
+          query_embedding: string
+          similarity_threshold?: number
+          match_count?: number
+          filter_category?: string
+          filter_type?: string
+        }
+        Returns: {
+          id: string
+          document_id: string
+          title: string
+          content: string
+          document_type: string
+          category: string
+          tags: string[]
+          confidence_score: number
+          similarity: number
+          metadata: Json
+        }[]
+      }
+      search_knowledge_documents: {
+        Args: {
+          query_embedding: string
+          similarity_threshold?: number
+          match_count?: number
+        }
+        Returns: {
+          id: string
+          title: string
+          content: string
+          document_type: string
+          category: string
+          tags: string[]
+          similarity: number
+          metadata: Json
         }[]
       }
       sparsevec_out: {
