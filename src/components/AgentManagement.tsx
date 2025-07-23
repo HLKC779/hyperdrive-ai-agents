@@ -23,7 +23,9 @@ import {
   AlertTriangle,
   CheckCircle2,
   MessageCircle,
-  Wrench
+  Wrench,
+  Cog,
+  Rocket
 } from 'lucide-react';
 
 interface Agent {
@@ -94,6 +96,7 @@ const AgentManagement = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isSystemConfigOpen, setIsSystemConfigOpen] = useState(false);
   const [newAgentForm, setNewAgentForm] = useState({ name: '', type: '', description: '' });
 
   const getStatusIcon = (status: Agent['status']) => {
@@ -175,6 +178,28 @@ const AgentManagement = () => {
     }
   };
 
+  const handleSystemConfig = () => {
+    setIsSystemConfigOpen(true);
+  };
+
+  const handleDeployAgent = () => {
+    // Simulate deployment process
+    const randomAgent = agents[Math.floor(Math.random() * agents.length)];
+    if (randomAgent) {
+      // Update agent status to show deployment
+      setAgents(prev => 
+        prev.map(agent => 
+          agent.id === randomAgent.id 
+            ? { ...agent, status: 'active' as const, lastActivity: 'Deployed now' }
+            : agent
+        )
+      );
+      alert(`Successfully deployed agent: ${randomAgent.name}`);
+    } else {
+      alert('No agents available for deployment. Please create an agent first.');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -183,76 +208,86 @@ const AgentManagement = () => {
           <h2 className="text-2xl font-bold">Multi-Task Agent System</h2>
           <p className="text-muted-foreground">Intelligent agents for technical support and user assistance</p>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Agent
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Create New Agent</DialogTitle>
-              <DialogDescription>
-                Configure a new AI agent for your system
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input 
-                  id="name" 
-                  placeholder="Agent name" 
-                  className="col-span-3" 
-                  value={newAgentForm.name}
-                  onChange={(e) => setNewAgentForm(prev => ({ ...prev, name: e.target.value }))}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="type" className="text-right">
-                  Type
-                </Label>
-                <Select 
-                  value={newAgentForm.type}
-                  onValueChange={(value) => setNewAgentForm(prev => ({ ...prev, type: value }))}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select agent type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Research">Research Agent</SelectItem>
-                    <SelectItem value="Development">Development Agent</SelectItem>
-                    <SelectItem value="Language">Language Processing</SelectItem>
-                    <SelectItem value="Multimodal">Multi-Modal Agent</SelectItem>
-                    <SelectItem value="Analysis">Data Analysis</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  placeholder="Describe the agent's purpose and capabilities"
-                  className="col-span-3"
-                  value={newAgentForm.description}
-                  onChange={(e) => setNewAgentForm(prev => ({ ...prev, description: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateAgent}>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={handleSystemConfig}>
+            <Cog className="h-4 w-4 mr-2" />
+            System Config
+          </Button>
+          <Button onClick={handleDeployAgent}>
+            <Rocket className="h-4 w-4 mr-2" />
+            Deploy Agent
+          </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
                 Create Agent
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Create New Agent</DialogTitle>
+                <DialogDescription>
+                  Configure a new AI agent for your system
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Name
+                  </Label>
+                  <Input 
+                    id="name" 
+                    placeholder="Agent name" 
+                    className="col-span-3" 
+                    value={newAgentForm.name}
+                    onChange={(e) => setNewAgentForm(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="type" className="text-right">
+                    Type
+                  </Label>
+                  <Select 
+                    value={newAgentForm.type}
+                    onValueChange={(value) => setNewAgentForm(prev => ({ ...prev, type: value }))}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select agent type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Research">Research Agent</SelectItem>
+                      <SelectItem value="Development">Development Agent</SelectItem>
+                      <SelectItem value="Language">Language Processing</SelectItem>
+                      <SelectItem value="Multimodal">Multi-Modal Agent</SelectItem>
+                      <SelectItem value="Analysis">Data Analysis</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="description" className="text-right">
+                    Description
+                  </Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Describe the agent's purpose and capabilities"
+                    className="col-span-3"
+                    value={newAgentForm.description}
+                    onChange={(e) => setNewAgentForm(prev => ({ ...prev, description: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateAgent}>
+                  Create Agent
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Tabs defaultValue="agents" className="space-y-4">
@@ -539,6 +574,105 @@ const AgentManagement = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* System Config Dialog */}
+      <Dialog open={isSystemConfigOpen} onOpenChange={setIsSystemConfigOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Cog className="h-5 w-5 text-primary" />
+              System Configuration
+            </DialogTitle>
+            <DialogDescription>
+              Configure global system settings and agent parameters
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* System Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium">Total Agents</Label>
+                <p className="text-lg font-semibold">{agents.length}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Active Agents</Label>
+                <p className="text-lg font-semibold text-green-600">
+                  {agents.filter(a => a.status === 'active').length}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">System Uptime</Label>
+                <p className="text-lg font-semibold">99.8%</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Memory Usage</Label>
+                <p className="text-lg font-semibold">
+                  {Math.round(agents.reduce((sum, agent) => sum + agent.memoryUsage, 0) / agents.length)}%
+                </p>
+              </div>
+            </div>
+
+            {/* Configuration Options */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Max Concurrent Agents</Label>
+                <Select defaultValue="10">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 Agents</SelectItem>
+                    <SelectItem value="10">10 Agents</SelectItem>
+                    <SelectItem value="20">20 Agents</SelectItem>
+                    <SelectItem value="unlimited">Unlimited</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Performance Threshold</Label>
+                <Select defaultValue="80">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="70">70%</SelectItem>
+                    <SelectItem value="80">80%</SelectItem>
+                    <SelectItem value="90">90%</SelectItem>
+                    <SelectItem value="95">95%</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Auto-scaling</Label>
+                <Select defaultValue="enabled">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="enabled">Enabled</SelectItem>
+                    <SelectItem value="disabled">Disabled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setIsSystemConfigOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                alert('System configuration saved successfully!');
+                setIsSystemConfigOpen(false);
+              }}>
+                Save Configuration
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
