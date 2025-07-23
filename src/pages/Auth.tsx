@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import appCover from '@/assets/app-cover.jpg';
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -123,8 +124,12 @@ const Auth = () => {
       
       <Card className="card-enhanced w-full max-w-md relative z-10 animate-scale-in">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center shadow-glow">
-            <div className="w-8 h-8 bg-primary-foreground rounded-full"></div>
+          <div className="mx-auto w-32 h-32 overflow-hidden rounded-lg shadow-glow">
+            <img 
+              src={appCover} 
+              alt="App Cover" 
+              className="w-full h-full object-cover"
+            />
           </div>
           <CardTitle className="text-3xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Welcome
