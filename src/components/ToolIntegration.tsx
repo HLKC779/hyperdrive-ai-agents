@@ -26,11 +26,13 @@ import {
   Clock,
   Activity,
   Code2,
-  Monitor
+  Monitor,
+  Wand2
 } from "lucide-react";
 import SearchAPIIntegration from "./SearchAPIIntegration";
 import WebScrapingCapabilities from "./WebScrapingCapabilities";
 import HeadlessBrowserAutomation from "./HeadlessBrowserAutomation";
+import PromptEngineeringGenerator from "./PromptEngineeringGenerator";
 
 interface Tool {
   id: string;
@@ -244,7 +246,7 @@ const ToolIntegration = () => {
 
       {/* Web Capabilities Tabs */}
       <Tabs defaultValue="search-apis" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="search-apis" className="flex items-center gap-2">
             <Search className="h-4 w-4" />
             Search APIs
@@ -256,6 +258,10 @@ const ToolIntegration = () => {
           <TabsTrigger value="browser-automation" className="flex items-center gap-2">
             <Monitor className="h-4 w-4" />
             Browser Automation
+          </TabsTrigger>
+          <TabsTrigger value="prompt-engineering" className="flex items-center gap-2">
+            <Wand2 className="h-4 w-4" />
+            Prompt Engineering
           </TabsTrigger>
           <TabsTrigger value="legacy-tools" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -273,6 +279,10 @@ const ToolIntegration = () => {
 
         <TabsContent value="browser-automation">
           <HeadlessBrowserAutomation />
+        </TabsContent>
+
+        <TabsContent value="prompt-engineering">
+          <PromptEngineeringGenerator />
         </TabsContent>
 
         <TabsContent value="legacy-tools" className="space-y-6">
