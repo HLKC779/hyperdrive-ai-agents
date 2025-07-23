@@ -11,6 +11,8 @@ import {
   Node,
   Edge,
   MarkerType,
+  Handle,
+  Position,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +24,7 @@ import { Brain, Zap, MessageCircle, Calendar, MapPin, TrendingUp } from 'lucide-
 // Custom Node Types
 const DecisionNode = ({ data }: { data: any }) => (
   <div className="decision-node bg-blue-50 border-2 border-blue-300 rounded-lg p-4 min-w-48">
+    <Handle type="target" position={Position.Top} />
     <div className="flex items-center gap-2 mb-2">
       <Brain className="h-4 w-4 text-blue-600" />
       <span className="font-semibold text-blue-800">Decision Point</span>
@@ -30,11 +33,13 @@ const DecisionNode = ({ data }: { data: any }) => (
     <Badge variant="outline" className="mt-2 text-xs">
       {data.agentType}
     </Badge>
+    <Handle type="source" position={Position.Bottom} />
   </div>
 );
 
 const ThoughtNode = ({ data }: { data: any }) => (
   <div className="thought-node bg-green-50 border-2 border-green-300 rounded-lg p-4 min-w-48">
+    <Handle type="target" position={Position.Top} />
     <div className="flex items-center gap-2 mb-2">
       <Zap className="h-4 w-4 text-green-600" />
       <span className="font-semibold text-green-800">Chain of Thought</span>
@@ -43,11 +48,13 @@ const ThoughtNode = ({ data }: { data: any }) => (
     <div className="mt-2 text-xs text-green-600">
       Confidence: {data.confidence}%
     </div>
+    <Handle type="source" position={Position.Bottom} />
   </div>
 );
 
 const ActionNode = ({ data }: { data: any }) => (
   <div className="action-node bg-orange-50 border-2 border-orange-300 rounded-lg p-4 min-w-48">
+    <Handle type="target" position={Position.Top} />
     <div className="flex items-center gap-2 mb-2">
       <Zap className="h-4 w-4 text-orange-600" />
       <span className="font-semibold text-orange-800">Action</span>
@@ -60,12 +67,13 @@ const ActionNode = ({ data }: { data: any }) => (
 );
 
 const ConditionNode = ({ data }: { data: any }) => (
-  <div className="condition-node bg-purple-50 border-2 border-purple-300 rounded-diamond p-4 min-w-48 transform rotate-45">
-    <div className="transform -rotate-45">
-      <div className="flex items-center justify-center mb-1">
-        <span className="font-semibold text-purple-800 text-sm text-center">{data.label}</span>
-      </div>
+  <div className="condition-node bg-purple-50 border-2 border-purple-300 rounded-lg p-4 min-w-48 relative">
+    <Handle type="target" position={Position.Top} />
+    <div className="flex items-center justify-center">
+      <span className="font-semibold text-purple-800 text-sm text-center">{data.label}</span>
     </div>
+    <Handle type="source" position={Position.Left} id="no" />
+    <Handle type="source" position={Position.Right} id="yes" />
   </div>
 );
 
@@ -149,6 +157,7 @@ const emailAgentEdges: Edge[] = [
   {
     id: 'e3',
     source: 'priority-check',
+    sourceHandle: 'no',
     target: 'urgent-response',
     label: 'Yes',
     markerEnd: { type: MarkerType.ArrowClosed },
@@ -157,6 +166,7 @@ const emailAgentEdges: Edge[] = [
   {
     id: 'e4',
     source: 'priority-check',
+    sourceHandle: 'yes',
     target: 'template-match',
     label: 'No',
     markerEnd: { type: MarkerType.ArrowClosed },
@@ -239,6 +249,7 @@ const agentDecisionTrees = {
       {
         id: 'be3',
         source: 'availability-check',
+        sourceHandle: 'yes',
         target: 'book-service',
         label: 'Yes',
         markerEnd: { type: MarkerType.ArrowClosed },
@@ -247,6 +258,7 @@ const agentDecisionTrees = {
       {
         id: 'be4',
         source: 'availability-check',
+        sourceHandle: 'no',
         target: 'suggest-alternatives',
         label: 'No',
         markerEnd: { type: MarkerType.ArrowClosed },
@@ -317,6 +329,7 @@ const agentDecisionTrees = {
       {
         id: 'ie3',
         source: 'real-time-check',
+        sourceHandle: 'yes',
         target: 'live-fetch',
         label: 'Yes',
         markerEnd: { type: MarkerType.ArrowClosed },
@@ -325,6 +338,7 @@ const agentDecisionTrees = {
       {
         id: 'ie4',
         source: 'real-time-check',
+        sourceHandle: 'no',
         target: 'cached-data',
         label: 'No',
         markerEnd: { type: MarkerType.ArrowClosed },
