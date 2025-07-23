@@ -92,6 +92,8 @@ const AgentManagement = () => {
   ]);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   const getStatusIcon = (status: Agent['status']) => {
     switch (status) {
@@ -136,6 +138,48 @@ const AgentManagement = () => {
     );
   };
 
+  const handleViewDetails = (agent: Agent) => {
+    setSelectedAgent(agent);
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleConfigureAgent = (agentId: string) => {
+    const agent = agents.find(a => a.id === agentId);
+    if (agent) {
+      alert(`Configuring ${agent.name} - Settings panel would open here`);
+    }
+  };
+
+  const handleCreateAgent = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const name = formData.get('name') as string;
+    const type = formData.get('type') as string;
+    const description = formData.get('description') as string;
+
+    if (name && type) {
+      const newAgent: Agent = {
+        id: `agent-${Date.now()}`,
+        name,
+        type,
+        status: 'idle',
+        performance: Math.floor(Math.random() * 20) + 80, // 80-99%
+        tasksCompleted: 0,
+        avgResponseTime: Math.random() * 2 + 1, // 1-3 seconds
+        memoryUsage: Math.floor(Math.random() * 30) + 20, // 20-50%
+        lastActivity: 'Just created',
+        capabilities: type === 'Research' ? ['Web Search', 'Data Analysis'] : 
+                     type === 'Development' ? ['Code Generation', 'Testing'] :
+                     type === 'Language' ? ['Text Analysis', 'Translation'] :
+                     ['General Tasks']
+      };
+
+      setAgents(prev => [...prev, newAgent]);
+      setIsCreateDialogOpen(false);
+      alert(`Agent "${name}" created successfully!`);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -158,49 +202,52 @@ const AgentManagement = () => {
                 Configure a new AI agent for your system
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input id="name" placeholder="Agent name" className="col-span-3" />
+            <form onSubmit={handleCreateAgent}>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Name
+                  </Label>
+                  <Input id="name" name="name" placeholder="Agent name" className="col-span-3" required />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="type" className="text-right">
+                    Type
+                  </Label>
+                  <Select name="type" required>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select agent type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Research">Research Agent</SelectItem>
+                      <SelectItem value="Development">Development Agent</SelectItem>
+                      <SelectItem value="Language">Language Processing</SelectItem>
+                      <SelectItem value="Multimodal">Multi-Modal Agent</SelectItem>
+                      <SelectItem value="Analysis">Data Analysis</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="description" className="text-right">
+                    Description
+                  </Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    placeholder="Describe the agent's purpose and capabilities"
+                    className="col-span-3"
+                  />
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="type" className="text-right">
-                  Type
-                </Label>
-                <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select agent type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="research">Research Agent</SelectItem>
-                    <SelectItem value="development">Development Agent</SelectItem>
-                    <SelectItem value="language">Language Processing</SelectItem>
-                    <SelectItem value="multimodal">Multi-Modal Agent</SelectItem>
-                    <SelectItem value="analysis">Data Analysis</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  Create Agent
+                </Button>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  placeholder="Describe the agent's purpose and capabilities"
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={() => setIsCreateDialogOpen(false)}>
-                Create Agent
-              </Button>
-            </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
@@ -303,7 +350,7 @@ const AgentManagement = () => {
                 <Button 
                   size="sm" 
                   variant="ghost"
-                  onClick={() => console.log(`Configuring agent ${agent.id}`)}
+                  onClick={() => handleConfigureAgent(agent.id)}
                 >
                   <Settings className="h-3 w-3" />
                 </Button>
@@ -315,7 +362,7 @@ const AgentManagement = () => {
                   size="sm" 
                   variant="secondary"
                   className="w-full"
-                  onClick={() => console.log(`Viewing details for agent ${agent.id}`)}
+                  onClick={() => handleViewDetails(agent)}
                 >
                   View Details
                 </Button>
@@ -372,6 +419,125 @@ const AgentManagement = () => {
           <TechnicalSupportAgent />
         </TabsContent>
       </Tabs>
+
+      {/* Agent Details Dialog */}
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-primary" />
+              {selectedAgent?.name} - Detailed Information
+            </DialogTitle>
+            <DialogDescription>
+              Complete details and performance metrics for this agent
+            </DialogDescription>
+          </DialogHeader>
+          {selectedAgent && (
+            <div className="space-y-6">
+              {/* Basic Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Agent ID</Label>
+                  <p className="text-sm text-muted-foreground">{selectedAgent.id}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Type</Label>
+                  <p className="text-sm text-muted-foreground">{selectedAgent.type}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Status</Label>
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(selectedAgent.status)}
+                    <Badge variant={getStatusVariant(selectedAgent.status)}>
+                      {selectedAgent.status}
+                    </Badge>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Last Activity</Label>
+                  <p className="text-sm text-muted-foreground">{selectedAgent.lastActivity}</p>
+                </div>
+              </div>
+
+              {/* Performance Metrics */}
+              <div>
+                <Label className="text-sm font-medium mb-3 block">Performance Metrics</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-green-600">{selectedAgent.performance}%</p>
+                        <p className="text-sm text-muted-foreground">Overall Performance</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-blue-600">{selectedAgent.tasksCompleted}</p>
+                        <p className="text-sm text-muted-foreground">Tasks Completed</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-orange-600">{selectedAgent.avgResponseTime}s</p>
+                        <p className="text-sm text-muted-foreground">Avg Response Time</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-purple-600">{selectedAgent.memoryUsage}%</p>
+                        <p className="text-sm text-muted-foreground">Memory Usage</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Capabilities */}
+              <div>
+                <Label className="text-sm font-medium mb-3 block">Capabilities</Label>
+                <div className="flex flex-wrap gap-2">
+                  {selectedAgent.capabilities.map((capability, index) => (
+                    <Badge key={index} variant="secondary" className="text-sm">
+                      {capability}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-between pt-4">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleAgentAction(selectedAgent.id, 'start')}
+                    disabled={selectedAgent.status === 'active'}
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Start Agent
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleAgentAction(selectedAgent.id, 'pause')}
+                    disabled={selectedAgent.status === 'idle'}
+                  >
+                    <Pause className="h-4 w-4 mr-2" />
+                    Pause Agent
+                  </Button>
+                </div>
+                <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
