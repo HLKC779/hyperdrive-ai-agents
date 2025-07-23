@@ -26,7 +26,8 @@ import {
   MessageCircle,
   Wrench,
   Cog,
-  Rocket
+  Rocket,
+  ArrowLeft
 } from 'lucide-react';
 
 interface Agent {
@@ -123,6 +124,7 @@ const AgentManagement = () => {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isSystemConfigOpen, setIsSystemConfigOpen] = useState(false);
   const [newAgentForm, setNewAgentForm] = useState({ name: '', type: '', description: '' });
+  const [activeTab, setActiveTab] = useState('agents');
 
   const getStatusIcon = (status: Agent['status']) => {
     switch (status) {
@@ -319,7 +321,7 @@ const AgentManagement = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="agents" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="agents">Agent Overview</TabsTrigger>
           <TabsTrigger value="chat">Support Chat</TabsTrigger>
@@ -489,6 +491,18 @@ const AgentManagement = () => {
         </TabsContent>
 
         <TabsContent value="automation" className="space-y-6">
+          {/* Go Back Button */}
+          <div className="flex items-center mb-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setActiveTab('agents')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Go Back to Agent Overview
+            </Button>
+          </div>
+
           {/* Automation Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Email Automation */}
