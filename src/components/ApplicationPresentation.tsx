@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,11 +25,14 @@ import {
   FileText,
   ChevronRight,
   Play,
-  ArrowRight
+  ArrowRight,
+  ArrowLeft,
+  Home
 } from "lucide-react";
 
 const ApplicationPresentation = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const navigate = useNavigate();
 
   const modules = [
     {
@@ -176,6 +180,27 @@ const ApplicationPresentation = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
+      {/* Go Back Navigation */}
+      <div className="flex items-center justify-between mb-6">
+        <Button 
+          variant="outline" 
+          onClick={() => navigate(-1)}
+          className="flex items-center space-x-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Go Back</span>
+        </Button>
+        
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate("/")}
+          className="flex items-center space-x-2"
+        >
+          <Home className="h-4 w-4" />
+          <span>Dashboard</span>
+        </Button>
+      </div>
+
       {/* Presentation Header */}
       <div className="text-center space-y-4">
         <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
