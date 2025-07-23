@@ -24,8 +24,13 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Activity
+  Activity,
+  Code2,
+  Monitor
 } from "lucide-react";
+import SearchAPIIntegration from "./SearchAPIIntegration";
+import WebScrapingCapabilities from "./WebScrapingCapabilities";
+import HeadlessBrowserAutomation from "./HeadlessBrowserAutomation";
 
 interface Tool {
   id: string;
@@ -201,7 +206,7 @@ const ToolIntegration = () => {
         <div>
           <h1 className="text-3xl font-bold">Tool Integration</h1>
           <p className="text-muted-foreground">
-            Manage external tools and APIs for enhanced agent capabilities
+            Manage external tools, APIs, and web automation capabilities
           </p>
         </div>
         <Dialog open={isAddToolOpen} onOpenChange={setIsAddToolOpen}>
@@ -237,175 +242,211 @@ const ToolIntegration = () => {
         </Dialog>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Activity className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-2xl font-bold">{categoryStats.total}</p>
-                <p className="text-sm text-muted-foreground">Total Tools</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <div>
-                <p className="text-2xl font-bold">{categoryStats.active}</p>
-                <p className="text-sm text-muted-foreground">Active</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <XCircle className="h-5 w-5 text-gray-500" />
-              <div>
-                <p className="text-2xl font-bold">{categoryStats.inactive}</p>
-                <p className="text-sm text-muted-foreground">Inactive</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <XCircle className="h-5 w-5 text-red-500" />
-              <div>
-                <p className="text-2xl font-bold">{categoryStats.error}</p>
-                <p className="text-sm text-muted-foreground">Errors</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Web Capabilities Tabs */}
+      <Tabs defaultValue="search-apis" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="search-apis" className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            Search APIs
+          </TabsTrigger>
+          <TabsTrigger value="web-scraping" className="flex items-center gap-2">
+            <Code2 className="h-4 w-4" />
+            Web Scraping
+          </TabsTrigger>
+          <TabsTrigger value="browser-automation" className="flex items-center gap-2">
+            <Monitor className="h-4 w-4" />
+            Browser Automation
+          </TabsTrigger>
+          <TabsTrigger value="legacy-tools" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Legacy Tools
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <Input
-            placeholder="Search tools..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full"
-          />
-        </div>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="border rounded-md px-3 py-2 bg-background"
-        >
-          <option value="all">All Categories</option>
-          <option value="search">Search</option>
-          <option value="code">Code</option>
-          <option value="database">Database</option>
-          <option value="file">File Processing</option>
-          <option value="math">Math</option>
-          <option value="vision">Vision</option>
-          <option value="nlp">NLP</option>
-        </select>
-      </div>
+        <TabsContent value="search-apis">
+          <SearchAPIIntegration />
+        </TabsContent>
 
-      {/* Tools Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTools.map((tool) => {
-          const IconComponent = getCategoryIcon(tool.category);
-          return (
-            <Card key={tool.id} className="h-full">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <IconComponent className="h-5 w-5" />
-                    <CardTitle className="text-lg">{tool.name}</CardTitle>
-                  </div>
-                  <Badge variant={getStatusVariant(tool.status)}>
-                    <div className="flex items-center space-x-1">
-                      {getStatusIcon(tool.status)}
-                      <span className="capitalize">{tool.status}</span>
-                    </div>
-                  </Badge>
-                </div>
-                <CardDescription>{tool.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Success Rate</span>
-                    <span>{tool.successRate}%</span>
-                  </div>
-                  <Progress value={tool.successRate} className="h-2" />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 text-sm">
+        <TabsContent value="web-scraping">
+          <WebScrapingCapabilities />
+        </TabsContent>
+
+        <TabsContent value="browser-automation">
+          <HeadlessBrowserAutomation />
+        </TabsContent>
+
+        <TabsContent value="legacy-tools" className="space-y-6">
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <Activity className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-muted-foreground">Usage Count</p>
-                    <p className="font-medium">{tool.usageCount.toLocaleString()}</p>
+                    <p className="text-2xl font-bold">{categoryStats.total}</p>
+                    <p className="text-sm text-muted-foreground">Total Tools</p>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground">Avg Response</p>
-                    <p className="font-medium">{tool.avgResponseTime}ms</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-muted-foreground">Last Used</p>
-                    <p className="font-medium">{tool.lastUsed}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Capabilities</p>
-                  <div className="flex flex-wrap gap-1">
-                    {tool.capabilities.slice(0, 3).map((capability, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {capability}
-                      </Badge>
-                    ))}
-                    {tool.capabilities.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{tool.capabilities.length - 3} more
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  {tool.status === 'active' ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleToolAction(tool.id, 'stop')}
-                    >
-                      <Pause className="h-3 w-3 mr-1" />
-                      Stop
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleToolAction(tool.id, 'start')}
-                    >
-                      <Play className="h-3 w-3 mr-1" />
-                      Start
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleToolAction(tool.id, 'restart')}
-                  >
-                    <RotateCcw className="h-3 w-3 mr-1" />
-                    Restart
-                  </Button>
                 </div>
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <div>
+                    <p className="text-2xl font-bold">{categoryStats.active}</p>
+                    <p className="text-sm text-muted-foreground">Active</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <XCircle className="h-5 w-5 text-gray-500" />
+                  <div>
+                    <p className="text-2xl font-bold">{categoryStats.inactive}</p>
+                    <p className="text-sm text-muted-foreground">Inactive</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <XCircle className="h-5 w-5 text-red-500" />
+                  <div>
+                    <p className="text-2xl font-bold">{categoryStats.error}</p>
+                    <p className="text-sm text-muted-foreground">Errors</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Search and Filter */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Search tools..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="border rounded-md px-3 py-2 bg-background"
+            >
+              <option value="all">All Categories</option>
+              <option value="search">Search</option>
+              <option value="code">Code</option>
+              <option value="database">Database</option>
+              <option value="file">File Processing</option>
+              <option value="math">Math</option>
+              <option value="vision">Vision</option>
+              <option value="nlp">NLP</option>
+            </select>
+          </div>
+
+          {/* Tools Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTools.map((tool) => {
+              const IconComponent = getCategoryIcon(tool.category);
+              return (
+                <Card key={tool.id} className="h-full">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <IconComponent className="h-5 w-5" />
+                        <CardTitle className="text-lg">{tool.name}</CardTitle>
+                      </div>
+                      <Badge variant={getStatusVariant(tool.status)}>
+                        <div className="flex items-center space-x-1">
+                          {getStatusIcon(tool.status)}
+                          <span className="capitalize">{tool.status}</span>
+                        </div>
+                      </Badge>
+                    </div>
+                    <CardDescription>{tool.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Success Rate</span>
+                        <span>{tool.successRate}%</span>
+                      </div>
+                      <Progress value={tool.successRate} className="h-2" />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Usage Count</p>
+                        <p className="font-medium">{tool.usageCount.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Avg Response</p>
+                        <p className="font-medium">{tool.avgResponseTime}ms</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-muted-foreground">Last Used</p>
+                        <p className="font-medium">{tool.lastUsed}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Capabilities</p>
+                      <div className="flex flex-wrap gap-1">
+                        {tool.capabilities.slice(0, 3).map((capability, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {capability}
+                          </Badge>
+                        ))}
+                        {tool.capabilities.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{tool.capabilities.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {tool.status === 'active' ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToolAction(tool.id, 'stop')}
+                        >
+                          <Pause className="h-3 w-3 mr-1" />
+                          Stop
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToolAction(tool.id, 'start')}
+                        >
+                          <Play className="h-3 w-3 mr-1" />
+                          Start
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToolAction(tool.id, 'restart')}
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        Restart
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
