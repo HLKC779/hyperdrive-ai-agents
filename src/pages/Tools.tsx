@@ -1,12 +1,26 @@
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ToolIntegration from "@/components/ToolIntegration";
 import BrightnessControl from "@/components/BrightnessControl";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const Tools = () => {
   return (
     <ProtectedRoute>
       <div className="min-h-screen p-6">
         <div className="max-w-7xl mx-auto space-y-8">
+          {/* Go Back Button */}
+          <div className="flex justify-start">
+            <Button 
+              variant="outline" 
+              onClick={() => window.history.back()}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Go Back
+            </Button>
+          </div>
+
           {/* Page Header */}
           <div className="text-center space-y-4">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
