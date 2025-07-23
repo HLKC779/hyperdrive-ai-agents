@@ -115,21 +115,21 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-background"></div>
+      {/* Background image with overlay */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${appCover})` }}
+      ></div>
+      <div className="absolute inset-0 bg-black/50"></div>
       
       {/* Floating background elements */}
-      <div className="absolute top-20 left-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+      <div className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
       
       <Card className="card-enhanced w-full max-w-md relative z-10 animate-scale-in">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-32 h-32 overflow-hidden rounded-lg shadow-glow">
-            <img 
-              src={appCover} 
-              alt="App Cover" 
-              className="w-full h-full object-cover"
-            />
+          <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center shadow-glow">
+            <div className="w-8 h-8 bg-primary-foreground rounded-full"></div>
           </div>
           <CardTitle className="text-3xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Welcome
