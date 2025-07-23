@@ -45,51 +45,75 @@ const AgentManagement = () => {
   const [agents, setAgents] = useState<Agent[]>([
     {
       id: 'agent-001',
-      name: 'Research Agent Alpha',
-      type: 'Research',
+      name: 'Email Automation Agent',
+      type: 'Email',
       status: 'active',
       performance: 96,
-      tasksCompleted: 247,
-      avgResponseTime: 2.3,
-      memoryUsage: 45,
-      lastActivity: '2 minutes ago',
-      capabilities: ['Web Search', 'Data Analysis', 'Report Generation', 'Technical Documentation']
+      tasksCompleted: 324,
+      avgResponseTime: 1.8,
+      memoryUsage: 42,
+      lastActivity: '1 minute ago',
+      capabilities: ['Email Sending', 'Email Response', 'Template Management', 'Auto-Reply', 'Email Scheduling']
     },
     {
       id: 'agent-002',
-      name: 'Code Generation Beta',
-      type: 'Development',
-      status: 'busy',
-      performance: 92,
+      name: 'Booking & Reservation Agent',
+      type: 'Booking',
+      status: 'active',
+      performance: 94,
       tasksCompleted: 189,
-      avgResponseTime: 5.7,
-      memoryUsage: 72,
-      lastActivity: 'Active now',
-      capabilities: ['Code Generation', 'Code Review', 'Testing', 'Debugging', 'Technical Support']
+      avgResponseTime: 3.2,
+      memoryUsage: 38,
+      lastActivity: '3 minutes ago',
+      capabilities: ['Flight Booking', 'Hotel Reservations', 'Restaurant Booking', 'Event Tickets', 'Travel Planning']
     },
     {
       id: 'agent-003',
-      name: 'NLP Processor Gamma',
-      type: 'Language',
-      status: 'idle',
-      performance: 89,
-      tasksCompleted: 356,
-      avgResponseTime: 1.8,
-      memoryUsage: 32,
-      lastActivity: '15 minutes ago',
-      capabilities: ['Text Analysis', 'Sentiment Analysis', 'Translation', 'User Support']
+      name: 'Data Intelligence Agent',
+      type: 'Intelligence',
+      status: 'busy',
+      performance: 91,
+      tasksCompleted: 445,
+      avgResponseTime: 2.1,
+      memoryUsage: 56,
+      lastActivity: 'Active now',
+      capabilities: ['Weather Reports', 'Stock Market Analysis', 'News Aggregation', 'Data Analytics', 'Market Trends']
     },
     {
       id: 'agent-004',
-      name: 'Technical Support Delta',
-      type: 'Support',
+      name: 'Schedule Management Agent',
+      type: 'Calendar',
       status: 'active',
-      performance: 94,
-      tasksCompleted: 412,
-      avgResponseTime: 3.2,
-      memoryUsage: 56,
-      lastActivity: '1 minute ago',
-      capabilities: ['Issue Resolution', 'Troubleshooting', 'User Assistance', 'Knowledge Base']
+      performance: 97,
+      tasksCompleted: 278,
+      avgResponseTime: 1.5,
+      memoryUsage: 35,
+      lastActivity: '2 minutes ago',
+      capabilities: ['Calendar Management', 'Appointment Scheduling', 'Meeting Coordination', 'Reminder Setting', 'Availability Checking']
+    },
+    {
+      id: 'agent-005',
+      name: 'SMS Communication Agent',
+      type: 'SMS',
+      status: 'active',
+      performance: 93,
+      tasksCompleted: 512,
+      avgResponseTime: 0.8,
+      memoryUsage: 28,
+      lastActivity: '30 seconds ago',
+      capabilities: ['SMS Sending', 'SMS Response', 'Bulk Messaging', 'Message Templates', 'Auto-Response']
+    },
+    {
+      id: 'agent-006',
+      name: 'Calendar Sync Agent',
+      type: 'Integration',
+      status: 'idle',
+      performance: 89,
+      tasksCompleted: 156,
+      avgResponseTime: 2.8,
+      memoryUsage: 44,
+      lastActivity: '8 minutes ago',
+      capabilities: ['Multi-Calendar Sync', 'Cross-Platform Integration', 'Schedule Optimization', 'Conflict Resolution', 'Team Coordination']
     }
   ]);
 
@@ -166,9 +190,12 @@ const AgentManagement = () => {
         avgResponseTime: Math.random() * 2 + 1,
         memoryUsage: Math.floor(Math.random() * 30) + 20,
         lastActivity: 'Just created',
-        capabilities: newAgentForm.type === 'Research' ? ['Web Search', 'Data Analysis'] : 
-                     newAgentForm.type === 'Development' ? ['Code Generation', 'Testing'] :
-                     newAgentForm.type === 'Language' ? ['Text Analysis', 'Translation'] :
+        capabilities: newAgentForm.type === 'Email' ? ['Email Sending', 'Email Response', 'Auto-Reply'] : 
+                     newAgentForm.type === 'Booking' ? ['Flight Booking', 'Hotel Reservations', 'Event Tickets'] :
+                     newAgentForm.type === 'Intelligence' ? ['Weather Reports', 'Stock Analysis', 'Market Trends'] :
+                     newAgentForm.type === 'Calendar' ? ['Appointment Scheduling', 'Calendar Management', 'Meeting Coordination'] :
+                     newAgentForm.type === 'SMS' ? ['SMS Sending', 'SMS Response', 'Bulk Messaging'] :
+                     newAgentForm.type === 'Integration' ? ['Multi-Calendar Sync', 'Cross-Platform Integration'] :
                      ['General Tasks']
       };
 
@@ -205,8 +232,8 @@ const AgentManagement = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Multi-Task Agent System</h2>
-          <p className="text-muted-foreground">Intelligent agents for technical support and user assistance</p>
+          <h2 className="text-2xl font-bold">Automation Agent Team</h2>
+          <p className="text-muted-foreground">Intelligent agents for email, booking, scheduling, communication and data intelligence</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={handleSystemConfig}>
@@ -256,11 +283,12 @@ const AgentManagement = () => {
                       <SelectValue placeholder="Select agent type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Research">Research Agent</SelectItem>
-                      <SelectItem value="Development">Development Agent</SelectItem>
-                      <SelectItem value="Language">Language Processing</SelectItem>
-                      <SelectItem value="Multimodal">Multi-Modal Agent</SelectItem>
-                      <SelectItem value="Analysis">Data Analysis</SelectItem>
+                      <SelectItem value="Email">Email Automation</SelectItem>
+                      <SelectItem value="Booking">Booking & Reservations</SelectItem>
+                      <SelectItem value="Intelligence">Data Intelligence</SelectItem>
+                      <SelectItem value="Calendar">Schedule Management</SelectItem>
+                      <SelectItem value="SMS">SMS Communication</SelectItem>
+                      <SelectItem value="Integration">Calendar Integration</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -291,10 +319,11 @@ const AgentManagement = () => {
       </div>
 
       <Tabs defaultValue="agents" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="agents">Agent Overview</TabsTrigger>
           <TabsTrigger value="chat">Support Chat</TabsTrigger>
           <TabsTrigger value="technical">Technical Center</TabsTrigger>
+          <TabsTrigger value="automation">Automation Tasks</TabsTrigger>
         </TabsList>
 
         <TabsContent value="agents" className="space-y-4">
@@ -455,6 +484,217 @@ const AgentManagement = () => {
 
         <TabsContent value="technical">
           <TechnicalSupportAgent />
+        </TabsContent>
+
+        <TabsContent value="automation" className="space-y-6">
+          {/* Automation Dashboard */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Email Automation */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5 text-blue-500" />
+                  Email Automation
+                </CardTitle>
+                <CardDescription>Automated email sending and responses</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span>Emails Sent Today:</span>
+                    <span className="font-semibold">247</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Auto-Replies:</span>
+                    <span className="font-semibold">89</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Response Rate:</span>
+                    <span className="font-semibold text-green-600">94%</span>
+                  </div>
+                  <Button size="sm" className="w-full">Configure Email Agent</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Booking & Reservations */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-orange-500" />
+                  Booking System
+                </CardTitle>
+                <CardDescription>Automated booking and reservations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span>Bookings Today:</span>
+                    <span className="font-semibold">42</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Success Rate:</span>
+                    <span className="font-semibold text-green-600">98%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Avg. Process Time:</span>
+                    <span className="font-semibold">3.2s</span>
+                  </div>
+                  <Button size="sm" className="w-full">Configure Booking Agent</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Data Intelligence */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-purple-500" />
+                  Data Intelligence
+                </CardTitle>
+                <CardDescription>Weather, stocks, and market data</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span>Reports Generated:</span>
+                    <span className="font-semibold">156</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Data Points:</span>
+                    <span className="font-semibold">2.4M</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Accuracy:</span>
+                    <span className="font-semibold text-green-600">99.1%</span>
+                  </div>
+                  <Button size="sm" className="w-full">Configure Intelligence Agent</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Calendar Management */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-green-500" />
+                  Calendar Sync
+                </CardTitle>
+                <CardDescription>Appointment and schedule management</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span>Appointments Today:</span>
+                    <span className="font-semibold">23</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Conflicts Resolved:</span>
+                    <span className="font-semibold">8</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Sync Status:</span>
+                    <span className="font-semibold text-green-600">Active</span>
+                  </div>
+                  <Button size="sm" className="w-full">Configure Calendar Agent</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* SMS Communication */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5 text-indigo-500" />
+                  SMS Automation
+                </CardTitle>
+                <CardDescription>Text message sending and responses</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span>Messages Sent:</span>
+                    <span className="font-semibold">1,234</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Auto-Responses:</span>
+                    <span className="font-semibold">456</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Delivery Rate:</span>
+                    <span className="font-semibold text-green-600">99.8%</span>
+                  </div>
+                  <Button size="sm" className="w-full">Configure SMS Agent</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Integration Hub */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-yellow-500" />
+                  Integration Hub
+                </CardTitle>
+                <CardDescription>Cross-platform integrations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span>Active Integrations:</span>
+                    <span className="font-semibold">12</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Data Synced:</span>
+                    <span className="font-semibold">48.3GB</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Sync Health:</span>
+                    <span className="font-semibold text-green-600">Excellent</span>
+                  </div>
+                  <Button size="sm" className="w-full">Configure Integration Agent</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Automation Activities */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Recent Automation Activities
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  { time: '2 min ago', action: 'Email Agent sent confirmation to client@example.com', status: 'success' },
+                  { time: '5 min ago', action: 'Booking Agent reserved flight AA123 for user', status: 'success' },
+                  { time: '8 min ago', action: 'Weather Agent updated forecast report', status: 'success' },
+                  { time: '12 min ago', action: 'Calendar Agent scheduled meeting for tomorrow 2PM', status: 'success' },
+                  { time: '15 min ago', action: 'SMS Agent sent reminder to customer', status: 'success' },
+                  { time: '18 min ago', action: 'Stock Agent detected market alert for AAPL', status: 'warning' },
+                ].map((activity, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${
+                        activity.status === 'success' ? 'bg-green-500' : 
+                        activity.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+                      }`} />
+                      <div>
+                        <p className="text-sm">{activity.action}</p>
+                        <p className="text-xs text-muted-foreground">{activity.time}</p>
+                      </div>
+                    </div>
+                    <Badge variant={activity.status === 'success' ? 'default' : 'secondary'}>
+                      {activity.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
