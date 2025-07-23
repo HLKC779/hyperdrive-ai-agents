@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import appCover from '@/assets/app-cover.jpg';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -387,6 +388,22 @@ const MultiModalProcessing = () => {
 
   return (
     <div className="space-y-6">
+      {/* Cover Image */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center">
+            <img 
+              src={appCover} 
+              alt="Generated App Cover" 
+              className="max-w-md w-full h-auto rounded-lg shadow-lg"
+            />
+          </div>
+          <p className="text-center text-muted-foreground mt-4">
+            Generated App Cover Image
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
