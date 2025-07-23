@@ -300,8 +300,24 @@ const AgentManagement = () => {
                   <RotateCcw className="h-3 w-3 mr-1" />
                   Restart
                 </Button>
-                <Button size="sm" variant="ghost">
+                <Button 
+                  size="sm" 
+                  variant="ghost"
+                  onClick={() => console.log(`Configuring agent ${agent.id}`)}
+                >
                   <Settings className="h-3 w-3" />
+                </Button>
+              </div>
+
+              {/* View Details Button */}
+              <div className="pt-2">
+                <Button 
+                  size="sm" 
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => console.log(`Viewing details for agent ${agent.id}`)}
+                >
+                  View Details
                 </Button>
               </div>
             </CardContent>
