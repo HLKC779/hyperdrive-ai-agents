@@ -28,25 +28,12 @@ export const useAuth = () => {
   }, []);
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      // Always clear local state regardless of error
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
       setUser(null);
       setSession(null);
-      
-      // If it's a session_not_found error, we don't need to treat it as an actual error
-      // since the user is already logged out
-      if (error && error.message !== "Session from session_id claim in JWT does not exist") {
-        return { error };
-      }
-      
-      return { error: null };
-    } catch (err) {
-      // Clear local state even if there's an error
-      setUser(null);
-      setSession(null);
-      return { error: err };
     }
+    return { error };
   };
 
   return {

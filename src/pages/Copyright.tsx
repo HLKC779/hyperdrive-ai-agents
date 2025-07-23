@@ -2,7 +2,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useNavigate } from "react-router-dom";
 import { 
   Shield, 
   AlertTriangle, 
@@ -15,13 +14,10 @@ import {
   Copyright as CopyrightIcon,
   Gavel,
   Users,
-  Clock,
-  ArrowLeft,
-  Home
+  Clock
 } from "lucide-react";
 
 const Copyright = () => {
-  const navigate = useNavigate();
   const copyrightInfo = {
     owner: "Cuong Lam Kim Huynh",
     year: "2024",
@@ -68,27 +64,6 @@ const Copyright = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Navigation Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate(-1)}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Go Back</span>
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/")}
-            className="flex items-center space-x-2"
-          >
-            <Home className="h-4 w-4" />
-            <span>Dashboard</span>
-          </Button>
-        </div>
-
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
