@@ -41,7 +41,8 @@ import {
   Database,
   Globe,
   BarChart,
-  Wifi
+  Wifi,
+  ArrowLeft
 } from "lucide-react";
 
 interface Task {
@@ -345,11 +346,21 @@ const ExecutionEngine = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Execution Engine</h1>
-          <p className="text-muted-foreground">
-            Monitor and manage task execution, resource usage, and system performance
-          </p>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Execution Engine</h1>
+            <p className="text-muted-foreground">
+              Monitor and manage task execution, resource usage, and system performance
+            </p>
+          </div>
         </div>
         <Dialog open={isCreateTaskOpen} onOpenChange={setIsCreateTaskOpen}>
           <DialogTrigger asChild>
