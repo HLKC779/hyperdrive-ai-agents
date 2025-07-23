@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import AnalyticsDashboard from "./AnalyticsDashboard";
 import { 
   Database, 
   Brain, 
@@ -530,12 +531,7 @@ const KnowledgeBase = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 border border-gray-200 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <BarChart3 className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">Usage trends chart</p>
-                  </div>
-                </div>
+                <AnalyticsDashboard />
               </CardContent>
             </Card>
 
