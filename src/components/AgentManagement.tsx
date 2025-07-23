@@ -234,9 +234,19 @@ const AgentManagement = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Automation Agent Team</h2>
-          <p className="text-muted-foreground">Intelligent agents for email, booking, scheduling, communication and data intelligence</p>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go Back
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold">Automation Agent Team</h2>
+            <p className="text-muted-foreground">Intelligent agents for email, booking, scheduling, communication and data intelligence</p>
+          </div>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={handleSystemConfig}>
