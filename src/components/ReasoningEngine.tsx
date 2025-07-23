@@ -19,7 +19,8 @@ import {
   AlertCircle,
   Play,
   Pause,
-  RotateCcw
+  RotateCcw,
+  ArrowLeft
 } from 'lucide-react';
 
 interface ReasoningProcess {
@@ -324,9 +325,19 @@ const ReasoningEngine = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Reasoning Engine</h2>
-          <p className="text-muted-foreground">Advanced reasoning and decision making</p>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go Back
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold">Reasoning Engine</h2>
+            <p className="text-muted-foreground">Advanced reasoning and decision making</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button 
