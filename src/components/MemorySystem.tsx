@@ -18,7 +18,8 @@ import {
   Clock,
   Layers,
   Zap,
-  BarChart3
+  BarChart3,
+  ArrowLeft
 } from 'lucide-react';
 
 interface MemoryEntry {
@@ -246,9 +247,19 @@ const MemorySystem = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Memory System</h2>
-          <p className="text-muted-foreground">Hybrid memory architecture management</p>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go Back
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold">Memory System</h2>
+            <p className="text-muted-foreground">Hybrid memory architecture management</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button 
