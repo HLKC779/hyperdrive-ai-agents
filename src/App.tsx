@@ -35,6 +35,7 @@ const App = () => (
           <Route path="/execution" element={<Execution />} />
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/multimodal" element={<MultiModal />} />
+          <Route path="/multi-modal" element={<MultiModal />} />
           <Route path="/security" element={<Security />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/copyright" element={<Copyright />} />
