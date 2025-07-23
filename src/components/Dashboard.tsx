@@ -29,15 +29,19 @@ import {
   LogOut,
   LogIn
 } from 'lucide-react';
+import QualityControlDashboard from './QualityControlDashboard';
+import AnalyticsDashboard from './AnalyticsDashboard';
 
 const Dashboard = () => {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
+  const [activeView, setActiveView] = React.useState('dashboard');
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
   };
+
   const systemMetrics = {
     activeAgents: 12,
     totalTasks: 1247,
@@ -62,6 +66,14 @@ const Dashboard = () => {
     { id: 4, task: 'Image Content Analysis', agent: 'Multi-Modal-01', status: 'queued', duration: '-' }
   ];
 
+  if (activeView === 'qc') {
+    return <QualityControlDashboard />;
+  }
+
+  if (activeView === 'analytics') {
+    return <AnalyticsDashboard />;
+  }
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -81,6 +93,14 @@ const Dashboard = () => {
                 <Button size="sm">
                   <Zap className="h-4 w-4 mr-2" />
                   Deploy Agent
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setActiveView('qc')}>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Quality Control
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setActiveView('analytics')}>
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Analytics
                 </Button>
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4 mr-2" />

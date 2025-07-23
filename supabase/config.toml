@@ -1,1 +1,19 @@
 project_id = "okzbbtgduzjqkcqungnu"
+
+[functions.speech-to-text]
+verify_jwt = false
+
+[functions.text-to-speech]
+verify_jwt = false
+
+[functions.rl-processor]
+verify_jwt = false
+
+[functions.prompt-generator]
+verify_jwt = false
+
+[functions.mcp-server]
+verify_jwt = true
+
+[functions.rag-system]
+verify_jwt = true
