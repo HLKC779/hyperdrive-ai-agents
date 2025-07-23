@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AgentChat from './AgentChat';
 import TechnicalSupportAgent from './TechnicalSupportAgent';
+import AgentDecisionTree from './AgentDecisionTree';
 import { 
   Brain, 
   Plus, 
@@ -319,11 +320,12 @@ const AgentManagement = () => {
       </div>
 
       <Tabs defaultValue="agents" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="agents">Agent Overview</TabsTrigger>
           <TabsTrigger value="chat">Support Chat</TabsTrigger>
           <TabsTrigger value="technical">Technical Center</TabsTrigger>
           <TabsTrigger value="automation">Automation Tasks</TabsTrigger>
+          <TabsTrigger value="decisions">Decision Tree</TabsTrigger>
         </TabsList>
 
         <TabsContent value="agents" className="space-y-4">
@@ -695,6 +697,10 @@ const AgentManagement = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="decisions">
+          <AgentDecisionTree />
         </TabsContent>
       </Tabs>
 
