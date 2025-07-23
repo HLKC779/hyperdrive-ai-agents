@@ -94,6 +94,7 @@ const AgentManagement = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [newAgentForm, setNewAgentForm] = useState({ name: '', type: '', description: '' });
 
   const getStatusIcon = (status: Agent['status']) => {
     switch (status) {
@@ -150,33 +151,27 @@ const AgentManagement = () => {
     }
   };
 
-  const handleCreateAgent = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const name = formData.get('name') as string;
-    const type = formData.get('type') as string;
-    const description = formData.get('description') as string;
-
-    if (name && type) {
+  const handleCreateAgent = () => {
+    if (newAgentForm.name && newAgentForm.type) {
       const newAgent: Agent = {
         id: `agent-${Date.now()}`,
-        name,
-        type,
+        name: newAgentForm.name,
+        type: newAgentForm.type,
         status: 'idle',
-        performance: Math.floor(Math.random() * 20) + 80, // 80-99%
+        performance: Math.floor(Math.random() * 20) + 80,
         tasksCompleted: 0,
-        avgResponseTime: Math.random() * 2 + 1, // 1-3 seconds
-        memoryUsage: Math.floor(Math.random() * 30) + 20, // 20-50%
+        avgResponseTime: Math.random() * 2 + 1,
+        memoryUsage: Math.floor(Math.random() * 30) + 20,
         lastActivity: 'Just created',
-        capabilities: type === 'Research' ? ['Web Search', 'Data Analysis'] : 
-                     type === 'Development' ? ['Code Generation', 'Testing'] :
-                     type === 'Language' ? ['Text Analysis', 'Translation'] :
+        capabilities: newAgentForm.type === 'Research' ? ['Web Search', 'Data Analysis'] : 
+                     newAgentForm.type === 'Development' ? ['Code Generation', 'Testing'] :
+                     newAgentForm.type === 'Language' ? ['Text Analysis', 'Translation'] :
                      ['General Tasks']
       };
 
       setAgents(prev => [...prev, newAgent]);
+      setNewAgentForm({ name: '', type: '', description: '' });
       setIsCreateDialogOpen(false);
-      alert(`Agent "${name}" created successfully!`);
     }
   };
 
@@ -202,52 +197,60 @@ const AgentManagement = () => {
                 Configure a new AI agent for your system
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateAgent}>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Name
-                  </Label>
-                  <Input id="name" name="name" placeholder="Agent name" className="col-span-3" required />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="type" className="text-right">
-                    Type
-                  </Label>
-                  <Select name="type" required>
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Select agent type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Research">Research Agent</SelectItem>
-                      <SelectItem value="Development">Development Agent</SelectItem>
-                      <SelectItem value="Language">Language Processing</SelectItem>
-                      <SelectItem value="Multimodal">Multi-Modal Agent</SelectItem>
-                      <SelectItem value="Analysis">Data Analysis</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="description" className="text-right">
-                    Description
-                  </Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    placeholder="Describe the agent's purpose and capabilities"
-                    className="col-span-3"
-                  />
-                </div>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input 
+                  id="name" 
+                  placeholder="Agent name" 
+                  className="col-span-3" 
+                  value={newAgentForm.name}
+                  onChange={(e) => setNewAgentForm(prev => ({ ...prev, name: e.target.value }))}
+                />
               </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  Create Agent
-                </Button>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">
+                  Type
+                </Label>
+                <Select 
+                  value={newAgentForm.type}
+                  onValueChange={(value) => setNewAgentForm(prev => ({ ...prev, type: value }))}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select agent type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Research">Research Agent</SelectItem>
+                    <SelectItem value="Development">Development Agent</SelectItem>
+                    <SelectItem value="Language">Language Processing</SelectItem>
+                    <SelectItem value="Multimodal">Multi-Modal Agent</SelectItem>
+                    <SelectItem value="Analysis">Data Analysis</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </form>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe the agent's purpose and capabilities"
+                  className="col-span-3"
+                  value={newAgentForm.description}
+                  onChange={(e) => setNewAgentForm(prev => ({ ...prev, description: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateAgent}>
+                Create Agent
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
