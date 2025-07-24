@@ -415,9 +415,11 @@ const QualityControlDashboard = () => {
 
   const testFeedbackCollection = async () => {
     try {
+      // Generate a proper UUID for session ID
+      const sessionId = crypto.randomUUID();
       const result = await collectFeedback({
         agentId: 'qc-test-agent',
-        sessionId: 'qc-session-' + Date.now(),
+        sessionId: sessionId,
         feedbackType: 'user_rating',
         feedbackValue: { score: 85, comment: 'QC validation test' },
         context: { test: 'QC validation' }

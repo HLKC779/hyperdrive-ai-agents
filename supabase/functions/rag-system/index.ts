@@ -158,9 +158,13 @@ async function indexDocument(supabase: any, request: RAGRequest): Promise<RAGRes
     console.log('Indexing new document');
 
     // Step 1: Create document record
+    // Note: For testing purposes, we'll use a system user ID if no auth context available
+    const systemUserId = '00000000-0000-0000-0000-000000000000';
+    
     const { data: document, error: docError } = await supabase
       .from('documents')
       .insert({
+        user_id: systemUserId, // Use system user for document indexing
         title: request.metadata?.title || 'Untitled Document',
         content: request.content,
         file_type: request.metadata?.file_type || 'text',
@@ -375,9 +379,9 @@ async function reindexDocuments(supabase: any, request: RAGRequest): Promise<RAG
 async function vectorSearch(supabase: any, queryEmbedding: number[], options: any): Promise<any[]> {
   try {
     const { data, error } = await supabase
-      .rpc('match_document_chunks', {
+      .rpc('search_document_chunks', {
         query_embedding: queryEmbedding,
-        match_threshold: options.threshold,
+        similarity_threshold: options.threshold,
         match_count: options.limit
       });
 

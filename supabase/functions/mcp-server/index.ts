@@ -109,9 +109,13 @@ async function storeMemory(supabase: any, request: MemoryRequest): Promise<Memor
     };
 
     // Store in documents table for now (we could create a dedicated memories table)
+    // Note: For testing purposes, we'll use a system user ID if no auth context available
+    const systemUserId = '00000000-0000-0000-0000-000000000000';
+    
     const { data, error } = await supabase
       .from('documents')
       .insert({
+        user_id: systemUserId, // Use system user for memory storage
         title: `${request.memoryType}-memory-${Date.now()}`,
         content: JSON.stringify(request.content),
         file_type: 'memory',
@@ -405,9 +409,9 @@ async function performVectorSearch(supabase: any, queryVector: number[], limit: 
   try {
     // Use pgvector similarity search
     const { data, error } = await supabase
-      .rpc('match_document_chunks', {
+      .rpc('search_document_chunks', {
         query_embedding: queryVector,
-        match_threshold: 0.7,
+        similarity_threshold: 0.7,
         match_count: limit
       });
 
