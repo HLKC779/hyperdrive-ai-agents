@@ -523,8 +523,8 @@ const QualityControlDashboard = () => {
       });
       
       return {
-        success: feedbackResult,
-        message: 'Full stack integration working',
+        success: feedbackResult === true,
+        message: feedbackResult ? 'Full stack integration working' : 'Feedback collection failed',
         details: { indexResult, queryResult, memoryResult, feedbackResult }
       };
     } catch (error: any) {
