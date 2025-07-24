@@ -516,7 +516,7 @@ const QualityControlDashboard = () => {
       
       const feedbackResult = await collectFeedback({
         agentId: 'integration-agent',
-        sessionId: 'integration-session-' + Date.now(),
+        sessionId: crypto.randomUUID(),
         feedbackType: 'system_metric',
         feedbackValue: { score: 95, workflow: 'complete' },
         context: { test: 'integration' }
