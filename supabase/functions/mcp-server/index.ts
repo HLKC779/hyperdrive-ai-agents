@@ -6,10 +6,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_MAX_REQUESTS = 100;
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+
 interface MemoryRequest {
   action: 'store' | 'retrieve' | 'update' | 'delete' | 'consolidate' | 'sync';
   agentId: string;
-  memoryType: 'episodic' | 'semantic' | 'working' | 'procedural';
+  memoryType?: 'episodic' | 'semantic' | 'working' | 'procedural';
   content?: any;
   metadata?: any;
   queryVector?: number[];
@@ -25,6 +29,53 @@ interface MemoryResponse {
   error?: string;
 }
 
+// Input validation functions
+function validateAgentId(agentId: string): boolean {
+  return typeof agentId === 'string' && 
+         agentId.length > 0 && 
+         agentId.length <= 100 &&
+         /^[a-zA-Z0-9_-]+$/.test(agentId);
+}
+
+function validateMemoryType(memoryType?: string): boolean {
+  if (!memoryType) return true;
+  return ['episodic', 'semantic', 'working', 'procedural'].includes(memoryType);
+}
+
+function validateAction(action: string): boolean {
+  return ['store', 'retrieve', 'update', 'delete', 'consolidate', 'sync'].includes(action);
+}
+
+function sanitizeContent(content: any): any {
+  if (typeof content === 'string') {
+    // Basic XSS prevention - remove potentially dangerous content
+    return content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                 .replace(/javascript:/gi, '')
+                 .replace(/on\w+\s*=/gi, '');
+  }
+  return content;
+}
+
+// Simple rate limiting using in-memory store (for production, use Redis)
+const rateLimitStore = new Map<string, { count: number; windowStart: number }>();
+
+function checkRateLimit(clientId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitStore.get(clientId);
+  
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW) {
+    rateLimitStore.set(clientId, { count: 1, windowStart: now });
+    return true;
+  }
+  
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+  
+  entry.count++;
+  return true;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -32,6 +83,32 @@ serve(async (req) => {
   }
 
   try {
+    // Get client IP for rate limiting
+    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    
+    // Check rate limit
+    if (!checkRateLimit(clientIp)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 429 
+        }
+      );
+    }
+
+    // Validate authentication (check for JWT token)
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authentication required' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 401 
+        }
+      );
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -40,26 +117,49 @@ serve(async (req) => {
     const request: MemoryRequest = await req.json();
     console.log('MCP Server processing request:', request.action);
 
+    // Input validation
+    if (!validateAction(request.action)) {
+      throw new Error('Invalid action specified');
+    }
+
+    if (!validateAgentId(request.agentId)) {
+      throw new Error('Invalid agentId: must be alphanumeric with dashes/underscores, 1-100 chars');
+    }
+
+    if (!validateMemoryType(request.memoryType)) {
+      throw new Error('Invalid memoryType: must be episodic, semantic, working, or procedural');
+    }
+
+    // Sanitize content to prevent XSS
+    if (request.content) {
+      request.content = sanitizeContent(request.content);
+    }
+
+    // Validate context size
+    if (request.contextSize && (request.contextSize < 1 || request.contextSize > 100)) {
+      throw new Error('Invalid contextSize: must be between 1 and 100');
+    }
+
     let result: MemoryResponse;
 
     switch (request.action) {
       case 'store':
-        result = await storeMemory(supabase, request);
+        result = await storeMemory(supabase, request, req);
         break;
       case 'retrieve':
-        result = await retrieveMemories(supabase, request);
+        result = await retrieveMemories(supabase, request, req);
         break;
       case 'update':
-        result = await updateMemory(supabase, request);
+        result = await updateMemory(supabase, request, req);
         break;
       case 'delete':
-        result = await deleteMemory(supabase, request);
+        result = await deleteMemory(supabase, request, req);
         break;
       case 'consolidate':
-        result = await consolidateMemories(supabase, request);
+        result = await consolidateMemories(supabase, request, req);
         break;
       case 'sync':
-        result = await syncMemoryStores(supabase, request);
+        result = await syncMemoryStores(supabase, request, req);
         break;
       default:
         throw new Error('Invalid action specified');
@@ -85,7 +185,7 @@ serve(async (req) => {
   }
 });
 
-async function storeMemory(supabase: any, request: MemoryRequest): Promise<MemoryResponse> {
+async function storeMemory(supabase: any, request: MemoryRequest, req: Request): Promise<MemoryResponse> {
   try {
     // Generate embedding if content provided
     let embedding = null;
@@ -108,14 +208,19 @@ async function storeMemory(supabase: any, request: MemoryRequest): Promise<Memor
       created_at: new Date().toISOString()
     };
 
-    // Store in documents table for now (we could create a dedicated memories table)
-    // Note: For testing purposes, we'll use a system user ID if no auth context available
-    const systemUserId = '00000000-0000-0000-0000-000000000000';
+    // Get authenticated user from JWT token
+    const authHeader = req.headers.get('authorization');
+    const jwt = authHeader?.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(jwt);
+    
+    if (authError || !user) {
+      throw new Error('Authentication failed');
+    }
     
     const { data, error } = await supabase
       .from('documents')
       .insert({
-        user_id: systemUserId, // Use system user for memory storage
+        user_id: user.id, // Use authenticated user ID
         title: `${request.memoryType}-memory-${Date.now()}`,
         content: JSON.stringify(request.content),
         file_type: 'memory',
@@ -148,7 +253,7 @@ async function storeMemory(supabase: any, request: MemoryRequest): Promise<Memor
   }
 }
 
-async function retrieveMemories(supabase: any, request: MemoryRequest): Promise<MemoryResponse> {
+async function retrieveMemories(supabase: any, request: MemoryRequest, req: Request): Promise<MemoryResponse> {
   try {
     let query = supabase
       .from('documents')
@@ -198,7 +303,7 @@ async function retrieveMemories(supabase: any, request: MemoryRequest): Promise<
   }
 }
 
-async function updateMemory(supabase: any, request: MemoryRequest): Promise<MemoryResponse> {
+async function updateMemory(supabase: any, request: MemoryRequest, req: Request): Promise<MemoryResponse> {
   try {
     if (!request.metadata?.id) {
       throw new Error('Memory ID required for update');
@@ -234,7 +339,7 @@ async function updateMemory(supabase: any, request: MemoryRequest): Promise<Memo
   }
 }
 
-async function deleteMemory(supabase: any, request: MemoryRequest): Promise<MemoryResponse> {
+async function deleteMemory(supabase: any, request: MemoryRequest, req: Request): Promise<MemoryResponse> {
   try {
     if (!request.metadata?.id) {
       throw new Error('Memory ID required for deletion');
@@ -263,7 +368,7 @@ async function deleteMemory(supabase: any, request: MemoryRequest): Promise<Memo
   }
 }
 
-async function consolidateMemories(supabase: any, request: MemoryRequest): Promise<MemoryResponse> {
+async function consolidateMemories(supabase: any, request: MemoryRequest, req: Request): Promise<MemoryResponse> {
   try {
     console.log('Starting memory consolidation for agent:', request.agentId);
     
@@ -338,7 +443,7 @@ async function consolidateMemories(supabase: any, request: MemoryRequest): Promi
   }
 }
 
-async function syncMemoryStores(supabase: any, request: MemoryRequest): Promise<MemoryResponse> {
+async function syncMemoryStores(supabase: any, request: MemoryRequest, req: Request): Promise<MemoryResponse> {
   try {
     console.log('Syncing memory stores for agent:', request.agentId);
     

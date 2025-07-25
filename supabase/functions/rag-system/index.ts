@@ -6,6 +6,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_MAX_REQUESTS = 50;
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+
+// Simple rate limiting using in-memory store
+const rateLimitStore = new Map<string, { count: number; windowStart: number }>();
+
+function checkRateLimit(clientId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitStore.get(clientId);
+  
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW) {
+    rateLimitStore.set(clientId, { count: 1, windowStart: now });
+    return true;
+  }
+  
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+  
+  entry.count++;
+  return true;
+}
+
+// Input validation functions
+function validateAction(action: string): boolean {
+  return ['query', 'index', 'update', 'delete', 'reindex'].includes(action);
+}
+
+function sanitizeInput(input: string): string {
+  return input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+              .replace(/javascript:/gi, '')
+              .replace(/on\w+\s*=/gi, '');
+}
+
 interface RAGRequest {
   action: 'query' | 'index' | 'update' | 'delete' | 'reindex';
   query?: string;
@@ -34,6 +69,32 @@ serve(async (req) => {
   }
 
   try {
+    // Get client IP for rate limiting
+    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    
+    // Check rate limit
+    if (!checkRateLimit(clientIp)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 429 
+        }
+      );
+    }
+
+    // Validate authentication (check for JWT token)
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authentication required' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 401 
+        }
+      );
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -42,23 +103,51 @@ serve(async (req) => {
     const request: RAGRequest = await req.json();
     console.log('RAG System processing request:', request.action);
 
+    // Input validation
+    if (!validateAction(request.action)) {
+      throw new Error('Invalid action specified');
+    }
+
+    // Sanitize string inputs
+    if (request.query) {
+      request.query = sanitizeInput(request.query);
+    }
+    if (request.content) {
+      request.content = sanitizeInput(request.content);
+    }
+
+    // Validate query length
+    if (request.query && request.query.length > 10000) {
+      throw new Error('Query too long: maximum 10,000 characters');
+    }
+
+    // Validate content length
+    if (request.content && request.content.length > 1000000) {
+      throw new Error('Content too long: maximum 1,000,000 characters');
+    }
+
+    // Validate limit
+    if (request.limit && (request.limit < 1 || request.limit > 100)) {
+      throw new Error('Invalid limit: must be between 1 and 100');
+    }
+
     let result: RAGResponse;
 
     switch (request.action) {
       case 'query':
-        result = await performRAGQuery(supabase, request);
+        result = await performRAGQuery(supabase, request, req);
         break;
       case 'index':
-        result = await indexDocument(supabase, request);
+        result = await indexDocument(supabase, request, req);
         break;
       case 'update':
-        result = await updateDocument(supabase, request);
+        result = await updateDocument(supabase, request, req);
         break;
       case 'delete':
-        result = await deleteDocument(supabase, request);
+        result = await deleteDocument(supabase, request, req);
         break;
       case 'reindex':
-        result = await reindexDocuments(supabase, request);
+        result = await reindexDocuments(supabase, request, req);
         break;
       default:
         throw new Error('Invalid action specified');
@@ -84,7 +173,7 @@ serve(async (req) => {
   }
 });
 
-async function performRAGQuery(supabase: any, request: RAGRequest): Promise<RAGResponse> {
+async function performRAGQuery(supabase: any, request: RAGRequest, req: Request): Promise<RAGResponse> {
   try {
     if (!request.query) {
       throw new Error('Query text is required');
@@ -149,7 +238,7 @@ async function performRAGQuery(supabase: any, request: RAGRequest): Promise<RAGR
   }
 }
 
-async function indexDocument(supabase: any, request: RAGRequest): Promise<RAGResponse> {
+async function indexDocument(supabase: any, request: RAGRequest, req: Request): Promise<RAGResponse> {
   try {
     if (!request.content) {
       throw new Error('Document content is required for indexing');
@@ -157,14 +246,19 @@ async function indexDocument(supabase: any, request: RAGRequest): Promise<RAGRes
 
     console.log('Indexing new document');
 
-    // Step 1: Create document record
-    // Note: For testing purposes, we'll use a system user ID if no auth context available
-    const systemUserId = '00000000-0000-0000-0000-000000000000';
+    // Get authenticated user from JWT token
+    const authHeader = req.headers.get('authorization');
+    const jwt = authHeader?.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(jwt);
+    
+    if (authError || !user) {
+      throw new Error('Authentication failed');
+    }
     
     const { data: document, error: docError } = await supabase
       .from('documents')
       .insert({
-        user_id: systemUserId, // Use system user for document indexing
+        user_id: user.id, // Use authenticated user ID
         title: request.metadata?.title || 'Untitled Document',
         content: request.content,
         file_type: request.metadata?.file_type || 'text',
@@ -217,7 +311,7 @@ async function indexDocument(supabase: any, request: RAGRequest): Promise<RAGRes
   }
 }
 
-async function updateDocument(supabase: any, request: RAGRequest): Promise<RAGResponse> {
+async function updateDocument(supabase: any, request: RAGRequest, req: Request): Promise<RAGResponse> {
   try {
     if (!request.documentId) {
       throw new Error('Document ID is required for update');
@@ -284,7 +378,7 @@ async function updateDocument(supabase: any, request: RAGRequest): Promise<RAGRe
   }
 }
 
-async function deleteDocument(supabase: any, request: RAGRequest): Promise<RAGResponse> {
+async function deleteDocument(supabase: any, request: RAGRequest, req: Request): Promise<RAGResponse> {
   try {
     if (!request.documentId) {
       throw new Error('Document ID is required for deletion');
@@ -313,7 +407,7 @@ async function deleteDocument(supabase: any, request: RAGRequest): Promise<RAGRe
   }
 }
 
-async function reindexDocuments(supabase: any, request: RAGRequest): Promise<RAGResponse> {
+async function reindexDocuments(supabase: any, request: RAGRequest, req: Request): Promise<RAGResponse> {
   try {
     console.log('Reindexing all documents');
 
