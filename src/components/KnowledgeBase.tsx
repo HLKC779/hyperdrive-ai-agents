@@ -140,6 +140,9 @@ const KnowledgeBase = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddKnowledgeOpen, setIsAddKnowledgeOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importCategory, setImportCategory] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
 
   const getTypeIcon = (type: KnowledgeItem['type']) => {
     const icons = {
@@ -188,6 +191,85 @@ const KnowledgeBase = () => {
     archived: knowledgeItems.filter(item => item.status === 'archived').length
   };
 
+  const handleImport = async () => {
+    if (!importFile) return;
+    
+    setIsImporting(true);
+    try {
+      const fileContent = await importFile.text();
+      let newItems: KnowledgeItem[] = [];
+      
+      if (importFile.name.endsWith('.json')) {
+        // Handle JSON import
+        const jsonData = JSON.parse(fileContent);
+        if (Array.isArray(jsonData)) {
+          newItems = jsonData.map((item, index) => ({
+            id: `imported-${Date.now()}-${index}`,
+            title: item.title || `Imported Item ${index + 1}`,
+            type: item.type || 'document',
+            category: importCategory || 'Imported',
+            content: item.content || JSON.stringify(item),
+            confidence: item.confidence || 85,
+            lastUpdated: 'Just now',
+            usageCount: 0,
+            creator: 'Import',
+            tags: item.tags || ['imported'],
+            relationships: [],
+            status: 'active' as const
+          }));
+        }
+      } else if (importFile.name.endsWith('.csv')) {
+        // Handle CSV import
+        const lines = fileContent.split('\n').filter(line => line.trim());
+        const headers = lines[0].split(',').map(h => h.trim());
+        newItems = lines.slice(1).map((line, index) => {
+          const values = line.split(',').map(v => v.trim());
+          return {
+            id: `imported-${Date.now()}-${index}`,
+            title: values[0] || `Imported Item ${index + 1}`,
+            type: 'document' as const,
+            category: importCategory || 'Imported',
+            content: headers.map((h, i) => `${h}: ${values[i] || ''}`).join('\n'),
+            confidence: 85,
+            lastUpdated: 'Just now',
+            usageCount: 0,
+            creator: 'Import',
+            tags: ['imported', 'csv'],
+            relationships: [],
+            status: 'active' as const
+          };
+        });
+      } else {
+        // Handle TXT import
+        newItems = [{
+          id: `imported-${Date.now()}`,
+          title: importFile.name.replace('.txt', ''),
+          type: 'document' as const,
+          category: importCategory || 'Imported',
+          content: fileContent,
+          confidence: 85,
+          lastUpdated: 'Just now',
+          usageCount: 0,
+          creator: 'Import',
+          tags: ['imported', 'text'],
+          relationships: [],
+          status: 'active' as const
+        }];
+      }
+      
+      setKnowledgeItems(prev => [...prev, ...newItems]);
+      setIsImportOpen(false);
+      setImportFile(null);
+      setImportCategory('');
+      
+      console.log(`Successfully imported ${newItems.length} knowledge items`);
+    } catch (error) {
+      console.error('Import failed:', error);
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const typeDistribution = {
     documents: knowledgeItems.filter(item => item.type === 'document').length,
     entities: knowledgeItems.filter(item => item.type === 'entity').length,
@@ -228,13 +310,7 @@ const KnowledgeBase = () => {
                     id="import-file" 
                     type="file" 
                     accept=".json,.csv,.txt"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        console.log('File selected:', file.name);
-                        // TODO: Implement file processing
-                      }
-                    }}
+                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Supported formats: JSON, CSV, TXT (max 10MB)
@@ -242,7 +318,12 @@ const KnowledgeBase = () => {
                 </div>
                 <div>
                   <Label htmlFor="import-category">Default Category</Label>
-                  <Input id="import-category" placeholder="e.g., Imported Data" />
+                  <Input 
+                    id="import-category" 
+                    placeholder="e.g., Imported Data" 
+                    value={importCategory}
+                    onChange={(e) => setImportCategory(e.target.value)}
+                  />
                 </div>
                 <div className="flex items-center space-x-2">
                   <input type="checkbox" id="auto-detect" className="rounded" />
@@ -251,11 +332,22 @@ const KnowledgeBase = () => {
                   </Label>
                 </div>
                 <div className="flex gap-2">
-                  <Button className="flex-1" onClick={() => setIsImportOpen(false)}>
+                  <Button 
+                    className="flex-1" 
+                    onClick={handleImport}
+                    disabled={!importFile || isImporting}
+                  >
                     <Upload className="h-4 w-4 mr-2" />
-                    Import Knowledge
+                    {isImporting ? 'Importing...' : 'Import Knowledge'}
                   </Button>
-                  <Button variant="outline" onClick={() => setIsImportOpen(false)}>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsImportOpen(false);
+                      setImportFile(null);
+                      setImportCategory('');
+                    }}
+                  >
                     Cancel
                   </Button>
                 </div>
