@@ -143,6 +143,9 @@ const KnowledgeBase = () => {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importCategory, setImportCategory] = useState('');
   const [isImporting, setIsImporting] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<KnowledgeItem | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const getTypeIcon = (type: KnowledgeItem['type']) => {
     const icons = {
@@ -262,11 +265,38 @@ const KnowledgeBase = () => {
       setImportFile(null);
       setImportCategory('');
       
-      console.log(`Successfully imported ${newItems.length} knowledge items`);
+    console.log(`Successfully imported ${newItems.length} knowledge items`);
     } catch (error) {
       console.error('Import failed:', error);
     } finally {
       setIsImporting(false);
+    }
+  };
+
+  const handleViewItem = (item: KnowledgeItem) => {
+    setSelectedItem(item);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleEditItem = (item: KnowledgeItem) => {
+    setSelectedItem(item);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleShareItem = (item: KnowledgeItem) => {
+    // Create a shareable link or copy to clipboard
+    const shareData = {
+      title: item.title,
+      text: item.content,
+      url: window.location.href + `#knowledge-${item.id}`
+    };
+    
+    if (navigator.share) {
+      navigator.share(shareData);
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(`${item.title}\n\n${item.content}\n\nShared from Knowledge Base`);
+      console.log('Item details copied to clipboard');
     }
   };
 
@@ -522,13 +552,13 @@ const KnowledgeBase = () => {
                           {item.status}
                         </Badge>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" onClick={() => handleViewItem(item)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" onClick={() => handleEditItem(item)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" onClick={() => handleShareItem(item)}>
                             <Share className="h-4 w-4" />
                           </Button>
                         </div>
@@ -703,6 +733,150 @@ const KnowledgeBase = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* View Item Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedItem && (
+                <>
+                  {(() => {
+                    const IconComponent = getTypeIcon(selectedItem.type);
+                    return <IconComponent className="h-5 w-5" />;
+                  })()}
+                  {selectedItem.title}
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedItem && `${selectedItem.category} • Updated ${selectedItem.lastUpdated}`}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedItem && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Badge variant={getStatusVariant(selectedItem.status)}>
+                  {selectedItem.status}
+                </Badge>
+                <Badge className={getTypeColor(selectedItem.type)}>
+                  {selectedItem.type}
+                </Badge>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold mb-2">Content</h4>
+                <p className="text-sm leading-relaxed bg-muted p-4 rounded-lg">
+                  {selectedItem.content}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-semibold mb-2">Metadata</h4>
+                  <div className="space-y-1 text-sm">
+                    <p><strong>Creator:</strong> {selectedItem.creator}</p>
+                    <p><strong>Usage Count:</strong> {selectedItem.usageCount}</p>
+                    <p><strong>Confidence:</strong> {selectedItem.confidence}%</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-2">Tags</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedItem.tags.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {selectedItem.relationships.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-2">Relationships</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Connected to {selectedItem.relationships.length} other knowledge item(s)
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Item Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Knowledge Item</DialogTitle>
+            <DialogDescription>
+              Modify the knowledge item details and content
+            </DialogDescription>
+          </DialogHeader>
+          {selectedItem && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-title">Title</Label>
+                  <Input 
+                    id="edit-title" 
+                    defaultValue={selectedItem.title}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-type">Type</Label>
+                  <select 
+                    id="edit-type" 
+                    className="w-full border rounded-md px-3 py-2"
+                    defaultValue={selectedItem.type}
+                  >
+                    <option value="document">Document</option>
+                    <option value="entity">Entity</option>
+                    <option value="relationship">Relationship</option>
+                    <option value="rule">Rule</option>
+                    <option value="fact">Fact</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-category">Category</Label>
+                <Input 
+                  id="edit-category" 
+                  defaultValue={selectedItem.category}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-content">Content</Label>
+                <Textarea 
+                  id="edit-content" 
+                  defaultValue={selectedItem.content}
+                  rows={6}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-tags">Tags</Label>
+                <Input 
+                  id="edit-tags" 
+                  defaultValue={selectedItem.tags.join(', ')}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button className="flex-1">
+                  Save Changes
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
