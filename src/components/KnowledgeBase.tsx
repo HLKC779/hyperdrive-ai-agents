@@ -139,6 +139,7 @@ const KnowledgeBase = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddKnowledgeOpen, setIsAddKnowledgeOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const getTypeIcon = (type: KnowledgeItem['type']) => {
     const icons = {
@@ -206,10 +207,61 @@ const KnowledgeBase = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Upload className="h-4 w-4 mr-2" />
-            Import
-          </Button>
+          <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="h-4 w-4 mr-2" />
+                Import
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Import Knowledge</DialogTitle>
+                <DialogDescription>
+                  Import knowledge items from various file formats (JSON, CSV, TXT)
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="import-file">Select File</Label>
+                  <Input 
+                    id="import-file" 
+                    type="file" 
+                    accept=".json,.csv,.txt"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        console.log('File selected:', file.name);
+                        // TODO: Implement file processing
+                      }
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Supported formats: JSON, CSV, TXT (max 10MB)
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="import-category">Default Category</Label>
+                  <Input id="import-category" placeholder="e.g., Imported Data" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="auto-detect" className="rounded" />
+                  <Label htmlFor="auto-detect" className="text-sm">
+                    Auto-detect knowledge types and relationships
+                  </Label>
+                </div>
+                <div className="flex gap-2">
+                  <Button className="flex-1" onClick={() => setIsImportOpen(false)}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import Knowledge
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsImportOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Dialog open={isAddKnowledgeOpen} onOpenChange={setIsAddKnowledgeOpen}>
             <DialogTrigger asChild>
               <Button>
