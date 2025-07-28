@@ -146,6 +146,15 @@ const KnowledgeBase = () => {
   const [selectedItem, setSelectedItem] = useState<KnowledgeItem | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  // Form state for adding new knowledge
+  const [newKnowledge, setNewKnowledge] = useState({
+    title: '',
+    type: 'document' as KnowledgeItem['type'],
+    category: '',
+    content: '',
+    tags: ''
+  });
 
   const getTypeIcon = (type: KnowledgeItem['type']) => {
     const icons = {
@@ -300,6 +309,42 @@ const KnowledgeBase = () => {
     }
   };
 
+  const handleAddKnowledge = () => {
+    if (!newKnowledge.title.trim() || !newKnowledge.content.trim()) {
+      console.log('Please fill in all required fields');
+      return;
+    }
+
+    const newItem: KnowledgeItem = {
+      id: `knowledge-${Date.now()}`,
+      title: newKnowledge.title.trim(),
+      type: newKnowledge.type,
+      category: newKnowledge.category.trim() || 'General',
+      content: newKnowledge.content.trim(),
+      confidence: 85,
+      lastUpdated: 'Just now',
+      usageCount: 0,
+      creator: 'User',
+      tags: newKnowledge.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+      relationships: [],
+      status: 'active'
+    };
+
+    setKnowledgeItems(prev => [...prev, newItem]);
+    setIsAddKnowledgeOpen(false);
+    
+    // Reset form
+    setNewKnowledge({
+      title: '',
+      type: 'document',
+      category: '',
+      content: '',
+      tags: ''
+    });
+    
+    console.log('Knowledge item added successfully');
+  };
+
   const typeDistribution = {
     documents: knowledgeItems.filter(item => item.type === 'document').length,
     entities: knowledgeItems.filter(item => item.type === 'entity').length,
@@ -402,11 +447,21 @@ const KnowledgeBase = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="title">Title</Label>
-                    <Input id="title" placeholder="Enter knowledge title" />
+                    <Input 
+                      id="title" 
+                      placeholder="Enter knowledge title" 
+                      value={newKnowledge.title}
+                      onChange={(e) => setNewKnowledge(prev => ({...prev, title: e.target.value}))}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="type">Type</Label>
-                    <select id="type" className="w-full border rounded-md px-3 py-2">
+                    <select 
+                      id="type" 
+                      className="w-full border rounded-md px-3 py-2"
+                      value={newKnowledge.type}
+                      onChange={(e) => setNewKnowledge(prev => ({...prev, type: e.target.value as KnowledgeItem['type']}))}
+                    >
                       <option value="document">Document</option>
                       <option value="entity">Entity</option>
                       <option value="relationship">Relationship</option>
@@ -417,17 +472,39 @@ const KnowledgeBase = () => {
                 </div>
                 <div>
                   <Label htmlFor="category">Category</Label>
-                  <Input id="category" placeholder="e.g., AI/ML, Business, Technology" />
+                  <Input 
+                    id="category" 
+                    placeholder="e.g., AI/ML, Business, Technology" 
+                    value={newKnowledge.category}
+                    onChange={(e) => setNewKnowledge(prev => ({...prev, category: e.target.value}))}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="content">Content</Label>
-                  <Textarea id="content" placeholder="Enter detailed content..." rows={4} />
+                  <Textarea 
+                    id="content" 
+                    placeholder="Enter detailed content..." 
+                    rows={4} 
+                    value={newKnowledge.content}
+                    onChange={(e) => setNewKnowledge(prev => ({...prev, content: e.target.value}))}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="tags">Tags</Label>
-                  <Input id="tags" placeholder="tag1, tag2, tag3" />
+                  <Input 
+                    id="tags" 
+                    placeholder="tag1, tag2, tag3" 
+                    value={newKnowledge.tags}
+                    onChange={(e) => setNewKnowledge(prev => ({...prev, tags: e.target.value}))}
+                  />
                 </div>
-                <Button className="w-full">Add to Knowledge Base</Button>
+                <Button 
+                  className="w-full" 
+                  onClick={handleAddKnowledge}
+                  disabled={!newKnowledge.title.trim() || !newKnowledge.content.trim()}
+                >
+                  Add to Knowledge Base
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
