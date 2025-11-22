@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +70,7 @@ interface Permission {
 
 interface AuditLog {
   id: string;
+  user_id: string | null;
   user: string;
   action: string;
   resource: string;
@@ -132,6 +134,7 @@ const mockPermissions: Permission[] = [
 const mockAuditLogs: AuditLog[] = [
   {
     id: '1',
+    user_id: null,
     user: 'John Smith',
     action: 'Agent Created',
     resource: 'Research Agent #4',
@@ -142,6 +145,7 @@ const mockAuditLogs: AuditLog[] = [
   },
   {
     id: '2',
+    user_id: null,
     user: 'Sarah Johnson',
     action: 'Data Export',
     resource: 'Knowledge Base',
@@ -152,6 +156,7 @@ const mockAuditLogs: AuditLog[] = [
   },
   {
     id: '3',
+    user_id: null,
     user: 'System',
     action: 'Failed Login',
     resource: 'Authentication',
@@ -171,17 +176,166 @@ const mockSecurityPolicies: SecurityPolicy[] = [
 
 const SecurityGovernance = () => {
   const { toast } = useToast();
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const navigate = useNavigate();
+  const [users, setUsers] = useState<User[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>(mockPermissions);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(mockAuditLogs);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [securityPolicies, setSecurityPolicies] = useState<SecurityPolicy[]>(mockSecurityPolicies);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Check admin status
   useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          navigate('/auth');
+          return;
+        }
+
+        const { data, error } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'admin'
+        });
+
+        if (error) throw error;
+
+        if (!data) {
+          toast({
+            title: "Access Denied",
+            description: "You need admin privileges to access this page",
+            variant: "destructive"
+          });
+          navigate('/');
+          return;
+        }
+
+        setIsAdmin(true);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        navigate('/');
+      }
+    };
+
+    checkAdminStatus();
+  }, [navigate, toast]);
+
+  // Fetch real users with roles
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const fetchUsers = async () => {
+      try {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, user_id, display_name, created_at');
+
+        if (profilesError) throw profilesError;
+
+        const { data: rolesData, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id, role');
+
+        if (rolesError) throw rolesError;
+
+        const mappedUsers: User[] = (profilesData || []).map(profile => {
+          const userRole = rolesData?.find(r => r.user_id === profile.user_id);
+          
+          return {
+            id: profile.user_id,
+            name: profile.display_name || 'Unknown User',
+            email: 'user@example.com',
+            role: (userRole?.role as User['role']) || 'viewer',
+            status: 'active' as const,
+            lastActive: 'Unknown',
+            permissions: [],
+            createdAt: new Date(profile.created_at).toLocaleDateString()
+          };
+        });
+
+        setUsers(mappedUsers);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch users",
+          variant: "destructive"
+        });
+      }
+    };
+
+    fetchUsers();
+  }, [isAdmin, toast]);
+
+  // Fetch real audit logs
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const fetchAuditLogs = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        if (error) throw error;
+
+        const mappedLogs: AuditLog[] = (data || []).map(log => ({
+          id: log.id,
+          user_id: log.user_id,
+          user: 'User',
+          action: log.action,
+          resource: log.resource,
+          timestamp: new Date(log.created_at).toLocaleString(),
+          status: log.status as AuditLog['status'],
+          details: log.details || '',
+          ipAddress: log.ip_address?.toString() || 'N/A'
+        }));
+
+        setAuditLogs(mappedLogs);
+      } catch (error) {
+        console.error('Error fetching audit logs:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch audit logs",
+          variant: "destructive"
+        });
+      }
+    };
+
+    fetchAuditLogs();
+
+    // Subscribe to real-time audit logs
+    const auditChannel = supabase
+      .channel('audit_logs_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'audit_logs'
+        },
+        () => {
+          fetchAuditLogs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(auditChannel);
+    };
+  }, [isAdmin, toast]);
+
+  // Fetch security events
+  useEffect(() => {
+    if (!isAdmin) return;
+
     fetchSecurityEvents();
 
     // Subscribe to real-time security events
@@ -203,7 +357,7 @@ const SecurityGovernance = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [isAdmin]);
 
   const fetchSecurityEvents = async () => {
     try {
