@@ -257,7 +257,7 @@ export const useAgentSystem = () => {
 
   const testDatabaseHealth = async () => {
     try {
-      const { data, error } = await supabase.from('documents').select('id').limit(1);
+      const { data, error } = await supabase.from('profiles').select('id').limit(1);
       return { healthy: !error, error: error?.message };
     } catch (error: any) {
       return { healthy: false, error: error.message };

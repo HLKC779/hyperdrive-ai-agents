@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,17 @@ import {
   Code,
   Zap
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface SecurityEvent {
+  id: string;
+  event_type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  created_at: string;
+  metadata?: any;
+}
 
 interface User {
   id: string;
@@ -159,13 +170,76 @@ const mockSecurityPolicies: SecurityPolicy[] = [
 ];
 
 const SecurityGovernance = () => {
+  const { toast } = useToast();
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [permissions, setPermissions] = useState<Permission[]>(mockPermissions);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(mockAuditLogs);
   const [securityPolicies, setSecurityPolicies] = useState<SecurityPolicy[]>(mockSecurityPolicies);
+  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    fetchSecurityEvents();
+
+    // Subscribe to real-time security events
+    const channel = supabase
+      .channel('security_events_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'security_events'
+        },
+        () => {
+          fetchSecurityEvents();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchSecurityEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('security_events')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      
+      // Map and validate severity values
+      const mappedData = (data || []).map(event => ({
+        id: event.id,
+        event_type: event.event_type,
+        severity: (event.severity === 'low' || event.severity === 'medium' || 
+                  event.severity === 'high' || event.severity === 'critical') 
+                  ? event.severity as 'low' | 'medium' | 'high' | 'critical'
+                  : 'medium' as 'low' | 'medium' | 'high' | 'critical',
+        description: event.description,
+        created_at: event.created_at,
+        metadata: event.metadata
+      }));
+      
+      setSecurityEvents(mappedData);
+    } catch (error) {
+      console.error('Error fetching security events:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch security events",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getRoleColor = (role: User['role']) => {
     switch (role) {
@@ -352,6 +426,7 @@ const SecurityGovernance = () => {
           <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
           <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+          <TabsTrigger value="events">Security Events</TabsTrigger>
           <TabsTrigger value="policies">Security Policies</TabsTrigger>
         </TabsList>
 
@@ -536,6 +611,70 @@ const SecurityGovernance = () => {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="events" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Real-Time Security Events
+              </CardTitle>
+              <CardDescription>
+                Live security monitoring from database with real-time updates
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-sm text-muted-foreground">Loading events...</div>
+              ) : securityEvents.length === 0 ? (
+                <div className="text-center py-8">
+                  <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-sm text-muted-foreground">No security events recorded yet</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Security events will appear here when system activities are logged
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {securityEvents.map((event) => (
+                    <div key={event.id} className="flex items-start justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Activity className="h-4 w-4 text-primary" />
+                          <span className="font-medium">{event.event_type}</span>
+                          <Badge 
+                            variant={
+                              event.severity === 'critical' ? 'destructive' : 
+                              event.severity === 'high' ? 'destructive' : 
+                              event.severity === 'medium' ? 'default' : 
+                              'outline'
+                            }
+                            className="text-xs"
+                          >
+                            {event.severity.toUpperCase()}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{event.description}</p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(event.created_at).toLocaleString()}
+                          </span>
+                          {event.metadata && Object.keys(event.metadata).length > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Database className="h-3 w-3" />
+                              Metadata available
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
