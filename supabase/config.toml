@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.rag-system]
 verify_jwt = true
+
+[functions.agent-ai-assistant]
+verify_jwt = true
