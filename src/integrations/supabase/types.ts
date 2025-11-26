@@ -14,6 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_alerts: {
+        Row: {
+          agent_id: string
+          agent_name: string
+          alert_type: string
+          created_at: string
+          id: string
+          message: string
+          resolved: boolean
+          resolved_at: string | null
+          severity: string
+        }
+        Insert: {
+          agent_id: string
+          agent_name: string
+          alert_type: string
+          created_at?: string
+          id?: string
+          message: string
+          resolved?: boolean
+          resolved_at?: string | null
+          severity: string
+        }
+        Update: {
+          agent_id?: string
+          agent_name?: string
+          alert_type?: string
+          created_at?: string
+          id?: string
+          message?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          severity?: string
+        }
+        Relationships: []
+      }
+      agent_metrics: {
+        Row: {
+          agent_id: string
+          agent_name: string
+          avg_response_time: number
+          cpu_usage: number | null
+          created_at: string
+          error_count: number
+          id: string
+          last_activity: string
+          memory_usage: number
+          performance: number
+          status: string
+          tasks_completed: number
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          agent_name: string
+          avg_response_time: number
+          cpu_usage?: number | null
+          created_at?: string
+          error_count?: number
+          id?: string
+          last_activity?: string
+          memory_usage: number
+          performance: number
+          status: string
+          tasks_completed?: number
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          agent_name?: string
+          avg_response_time?: number
+          cpu_usage?: number | null
+          created_at?: string
+          error_count?: number
+          id?: string
+          last_activity?: string
+          memory_usage?: number
+          performance?: number
+          status?: string
+          tasks_completed?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string

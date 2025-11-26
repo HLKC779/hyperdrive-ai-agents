@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,9 @@ import AgentChat from './AgentChat';
 import TechnicalSupportAgent from './TechnicalSupportAgent';
 import AgentDecisionTree from './AgentDecisionTree';
 import AgentAIAssistant from './AgentAIAssistant';
-import { 
+import AgentRealtimeMonitor from './AgentRealtimeMonitor';
+import { useAgentMetrics } from '@/hooks/useAgentMetrics';
+import {
   Brain, 
   Plus, 
   Play, 
@@ -45,6 +47,7 @@ interface Agent {
 }
 
 const AgentManagement = () => {
+  const { simulateMetrics } = useAgentMetrics();
   const [agents, setAgents] = useState<Agent[]>([
     {
       id: 'agent-001',
@@ -213,6 +216,10 @@ const AgentManagement = () => {
     setIsSystemConfigOpen(true);
   };
 
+  const handleSimulateMetrics = async () => {
+    await simulateMetrics(agents);
+  };
+
   const handleDeployAgent = () => {
     // Simulate deployment process
     const randomAgent = agents[Math.floor(Math.random() * agents.length)];
@@ -250,6 +257,10 @@ const AgentManagement = () => {
           </div>
         </div>
         <div className="flex gap-3">
+          <Button variant="outline" onClick={handleSimulateMetrics}>
+            <Activity className="h-4 w-4 mr-2" />
+            Simulate Metrics
+          </Button>
           <Button variant="outline" onClick={handleSystemConfig}>
             <Cog className="h-4 w-4 mr-2" />
             System Config
@@ -333,14 +344,19 @@ const AgentManagement = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="agents">Agent Overview</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="monitor">Live Monitor</TabsTrigger>
+          <TabsTrigger value="agents">Agents</TabsTrigger>
           <TabsTrigger value="ai-assistant">AI Assistant</TabsTrigger>
-          <TabsTrigger value="chat">Support Chat</TabsTrigger>
-          <TabsTrigger value="technical">Technical Center</TabsTrigger>
-          <TabsTrigger value="automation">Automation Tasks</TabsTrigger>
-          <TabsTrigger value="decisions">Decision Tree</TabsTrigger>
+          <TabsTrigger value="chat">Chat</TabsTrigger>
+          <TabsTrigger value="technical">Technical</TabsTrigger>
+          <TabsTrigger value="automation">Automation</TabsTrigger>
+          <TabsTrigger value="decisions">Decisions</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="monitor" className="space-y-4">
+          <AgentRealtimeMonitor />
+        </TabsContent>
 
         <TabsContent value="ai-assistant" className="space-y-4">
           <AgentAIAssistant agents={agents} />
