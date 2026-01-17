@@ -13,6 +13,7 @@ import TechnicalSupportAgent from './TechnicalSupportAgent';
 import AgentDecisionTree from './AgentDecisionTree';
 import AgentAIAssistant from './AgentAIAssistant';
 import AgentRealtimeMonitor from './AgentRealtimeMonitor';
+import AgentAutoScaler from './AgentAutoScaler';
 import { useAgentMetrics } from '@/hooks/useAgentMetrics';
 import {
   Brain, 
@@ -344,8 +345,9 @@ const AgentManagement = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="monitor">Live Monitor</TabsTrigger>
+          <TabsTrigger value="auto-scaler">Auto-Scaler</TabsTrigger>
           <TabsTrigger value="agents">Agents</TabsTrigger>
           <TabsTrigger value="ai-assistant">AI Assistant</TabsTrigger>
           <TabsTrigger value="chat">Chat</TabsTrigger>
@@ -356,6 +358,10 @@ const AgentManagement = () => {
 
         <TabsContent value="monitor" className="space-y-4">
           <AgentRealtimeMonitor />
+        </TabsContent>
+
+        <TabsContent value="auto-scaler" className="space-y-4">
+          <AgentAutoScaler />
         </TabsContent>
 
         <TabsContent value="ai-assistant" className="space-y-4">
