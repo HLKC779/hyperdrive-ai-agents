@@ -164,6 +164,144 @@ export type Database = {
         }
         Relationships: []
       }
+      rl_agent_metrics: {
+        Row: {
+          agent_id: string
+          id: string
+          metadata: Json | null
+          metric_type: string
+          metric_value: number
+          session_id: string | null
+          timestamp: string
+        }
+        Insert: {
+          agent_id: string
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          metric_value: number
+          session_id?: string | null
+          timestamp?: string
+        }
+        Update: {
+          agent_id?: string
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          metric_value?: number
+          session_id?: string | null
+          timestamp?: string
+        }
+        Relationships: []
+      }
+      rl_feedback: {
+        Row: {
+          agent_id: string
+          context: Json | null
+          feedback_type: string
+          feedback_value: Json
+          id: string
+          processed: boolean | null
+          session_id: string
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          context?: Json | null
+          feedback_type: string
+          feedback_value: Json
+          id?: string
+          processed?: boolean | null
+          session_id: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          context?: Json | null
+          feedback_type?: string
+          feedback_value?: Json
+          id?: string
+          processed?: boolean | null
+          session_id?: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      rl_system_interactions: {
+        Row: {
+          agent_id: string
+          id: string
+          input_data: Json | null
+          interaction_type: string
+          output_data: Json | null
+          reward: number | null
+          session_id: string
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          id?: string
+          input_data?: Json | null
+          interaction_type: string
+          output_data?: Json | null
+          reward?: number | null
+          session_id: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          id?: string
+          input_data?: Json | null
+          interaction_type?: string
+          output_data?: Json | null
+          reward?: number | null
+          session_id?: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      rl_training_sessions: {
+        Row: {
+          agent_id: string
+          completed_at: string | null
+          config: Json | null
+          created_at: string
+          id: string
+          metrics: Json | null
+          session_name: string | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          agent_id: string
+          completed_at?: string | null
+          config?: Json | null
+          created_at?: string
+          id?: string
+          metrics?: Json | null
+          session_name?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          agent_id?: string
+          completed_at?: string | null
+          config?: Json | null
+          created_at?: string
+          id?: string
+          metrics?: Json | null
+          session_name?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       security_events: {
         Row: {
           created_at: string

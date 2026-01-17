@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   Shield, 
   Users, 
@@ -470,6 +471,16 @@ const SecurityGovernance = () => {
 
   return (
     <div className="space-y-6">
+      {/* Demo Mode Banner */}
+      <Alert variant="default" className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
+        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        <AlertTitle className="text-yellow-800 dark:text-yellow-200">Demo Mode</AlertTitle>
+        <AlertDescription className="text-yellow-700 dark:text-yellow-300">
+          Permissions and Security Policies sections show example data only. 
+          Real access control is enforced via backend RLS policies.
+        </AlertDescription>
+      </Alert>
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
