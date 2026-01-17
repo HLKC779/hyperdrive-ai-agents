@@ -58,7 +58,7 @@ export const useRLSystem = () => {
     setIsLoading(true);
     try {
       const { error } = await supabase
-        .from('rl_feedback' as any)
+        .from('rl_feedback')
         .insert({
           session_id: feedback.sessionId,
           agent_id: feedback.agentId,
@@ -84,15 +84,15 @@ export const useRLSystem = () => {
   const recordInteraction = useCallback(async (interaction: Omit<RLSystemInteraction, 'id' | 'timestamp'>) => {
     try {
       const { error } = await supabase
-        .from('rl_system_interactions' as any)
+        .from('rl_system_interactions')
         .insert({
           user_id: interaction.userId,
-          session_id: interaction.sessionId,
+          session_id: interaction.sessionId || '',
+          agent_id: interaction.interactionType, // Using interaction_type as agent_id since table requires it
           interaction_type: interaction.interactionType,
-          target_element: interaction.targetElement,
-          interaction_data: interaction.interactionData,
-          system_state: interaction.systemState,
-          outcome: interaction.outcome
+          input_data: interaction.interactionData,
+          output_data: interaction.systemState,
+          reward: interaction.outcome?.reward
         });
 
       if (error) throw error;
@@ -107,7 +107,7 @@ export const useRLSystem = () => {
   const recordMetric = useCallback(async (metric: Omit<RLMetric, 'id' | 'timestamp'>) => {
     try {
       const { error } = await supabase
-        .from('rl_agent_metrics' as any)
+        .from('rl_agent_metrics')
         .insert({
           agent_id: metric.agentId,
           session_id: metric.sessionId,
@@ -129,13 +129,13 @@ export const useRLSystem = () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('rl_training_sessions' as any)
+        .from('rl_training_sessions')
         .insert({
           session_name: session.sessionName,
-          agent_ids: session.agentIds,
-          environment_id: session.environmentId,
+          agent_id: session.agentIds?.[0] || 'default', // Use first agent ID
           status: session.status,
-          configuration: session.configuration
+          config: session.configuration,
+          started_at: new Date().toISOString()
         })
         .select()
         .single();
@@ -157,7 +157,7 @@ export const useRLSystem = () => {
     setIsLoading(true);
     try {
       const { error } = await supabase
-        .from('rl_training_sessions' as any)
+        .from('rl_training_sessions')
         .update(updates)
         .eq('id', sessionId);
 
@@ -177,7 +177,7 @@ export const useRLSystem = () => {
   const getFeedback = useCallback(async (agentId?: string, limit = 100) => {
     try {
       let query = supabase
-        .from('rl_feedback' as any)
+        .from('rl_feedback')
         .select('*')
         .order('timestamp', { ascending: false })
         .limit(limit);
@@ -199,7 +199,7 @@ export const useRLSystem = () => {
   const getMetrics = useCallback(async (agentId?: string, limit = 100) => {
     try {
       let query = supabase
-        .from('rl_agent_metrics' as any)
+        .from('rl_agent_metrics')
         .select('*')
         .order('timestamp', { ascending: false })
         .limit(limit);
@@ -221,7 +221,7 @@ export const useRLSystem = () => {
   const getTrainingSessions = useCallback(async (status?: string) => {
     try {
       let query = supabase
-        .from('rl_training_sessions' as any)
+        .from('rl_training_sessions')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -242,7 +242,7 @@ export const useRLSystem = () => {
   const getInteractions = useCallback(async (userId?: string, limit = 100) => {
     try {
       let query = supabase
-        .from('rl_system_interactions' as any)
+        .from('rl_system_interactions')
         .select('*')
         .order('timestamp', { ascending: false })
         .limit(limit);
