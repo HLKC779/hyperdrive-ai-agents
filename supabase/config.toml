@@ -1,5 +1,8 @@
 project_id = "eykjjtjkjrgdvzjdbrwa"
 
+[functions.agent-auto-scaler]
+verify_jwt = false
+
 [functions.speech-to-text]
 verify_jwt = true
 
