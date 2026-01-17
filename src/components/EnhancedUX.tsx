@@ -28,8 +28,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+// PDF export removed due to security vulnerability in jspdf
 import { 
   Download, 
   Filter, 
@@ -284,47 +283,8 @@ const EnhancedUX = () => {
 
   const uniqueAgents = [...new Set(tasks.map(task => task.assignedAgent))];
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    
-    // Title
-    doc.setFontSize(20);
-    doc.text('Task Execution Report', 20, 20);
-    
-    // Metadata
-    doc.setFontSize(12);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 35);
-    doc.text(`Total Tasks: ${filteredTasks.length}`, 20, 45);
-    doc.text(`Selected Tasks: ${selectedTasks.size}`, 20, 55);
-
-    // Table data
-    const tableData = filteredTasks.map(task => [
-      task.name,
-      task.type,
-      task.status,
-      task.priority,
-      task.assignedAgent,
-      task.createdDate.toLocaleDateString(),
-      task.estimatedTime
-    ]);
-
-    // Add table
-    (doc as any).autoTable({
-      head: [['Task Name', 'Type', 'Status', 'Priority', 'Agent', 'Created', 'ETA']],
-      body: tableData,
-      startY: 70,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [41, 128, 185] }
-    });
-
-    doc.save('task-execution-report.pdf');
-    setIsExportDialogOpen(false);
-    
-    toast({
-      title: "Report Exported! 📄",
-      description: "PDF report has been downloaded successfully",
-    });
-  };
+  // PDF export removed due to security vulnerability in jspdf (GHSA-f8cm-6447-x5h2)
+  // Use CSV export instead
 
   const exportToCSV = () => {
     const csvContent = [
@@ -392,18 +352,12 @@ const EnhancedUX = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Export current view with {filteredTasks.length} tasks to your preferred format
+                  Export current view with {filteredTasks.length} tasks
                 </p>
-                <div className="grid grid-cols-2 gap-4">
-                  <Button onClick={exportToPDF} className="h-20 flex flex-col">
-                    <FileText className="h-6 w-6 mb-2" />
-                    Export as PDF
-                  </Button>
-                  <Button onClick={exportToCSV} variant="outline" className="h-20 flex flex-col">
-                    <BarChart className="h-6 w-6 mb-2" />
-                    Export as CSV
-                  </Button>
-                </div>
+                <Button onClick={exportToCSV} className="w-full h-20 flex flex-col">
+                  <BarChart className="h-6 w-6 mb-2" />
+                  Export as CSV
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
